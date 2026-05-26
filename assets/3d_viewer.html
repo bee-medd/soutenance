@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>3D Robe Viewer</title>
+<style>body{margin:0;overflow:hidden;font-family:'Cairo',sans-serif}#controls{position:absolute;bottom:20px;left:20px;right:20px;background:rgba(0,0,0,0.7);padding:10px;border-radius:10px;color:white;display:none}button{padding:10px 20px;margin:5px;border:none;border-radius:5px;cursor:pointer}.color-btn{width:40px;height:40px;border-radius:50%;margin:5px;border:2px solid white}.info{position:absolute;top:20px;left:20px;background:rgba(0,0,0,0.6);padding:8px 15px;border-radius:20px;color:white;font-size:14px;pointer-events:none}</style>
+</head>
+<body>
+<div class="info">🎓 Toga DZ - اسحب لتغيير الزاوية</div>
+<div id="controls"><div style="text-align:center;margin-bottom:10px">تغيير لون الوشاح:</div><div style="display:flex;justify-content:center;gap:10px"><div class="color-btn" style="background:#800020" onclick="changeStoleColor('#800020')"></div><div class="color-btn" style="background:#000" onclick="changeStoleColor('#000000')"></div><div class="color-btn" style="background:#006233" onclick="changeStoleColor('#006233')"></div><div class="color-btn" style="background:#C9A227" onclick="changeStoleColor('#C9A227')"></div><div class="color-btn" style="background:#4B0082" onclick="changeStoleColor('#4B0082')"></div></div></div>
+<script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.128.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.128.0/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';import {OrbitControls} from 'three/addons/controls/OrbitControls.js';import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x111122);const camera=new THREE.PerspectiveCamera(45,innerWidth/innerHeight,0.1,1000);camera.position.set(2,1.5,3);
+const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;document.body.appendChild(renderer.domElement);
+const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.autoRotate=true;controls.autoRotateSpeed=1.5;
+scene.add(new THREE.AmbientLight(0x404060));const mainLight=new THREE.DirectionalLight(0xffffff,1);mainLight.position.set(2,5,3);scene.add(mainLight);
+let robeModel=null, stoleMaterial=null;
+function createFallbackRobe(){const g=new THREE.Group();const body=new THREE.Mesh(new THREE.BoxGeometry(0.7,1.2,0.4),new THREE.MeshStandardMaterial({color:0x2d2d6b}));body.position.y=0;g.add(body);const stole=new THREE.Mesh(new THREE.BoxGeometry(0.15,0.9,0.08),new THREE.MeshStandardMaterial({color:0xc9a227}));stoleMaterial=stole.material;stole.position.set(0.35,0.2,0.25);g.add(stole);robeModel=g;scene.add(g);document.getElementById('controls').style.display='block';}
+const loader=new GLTFLoader();loader.load('robe.glb',gltf=>{robeModel=gltf.scene;robeModel.traverse(c=>{if(c.isMesh){c.castShadow=true;if(c.name.toLowerCase().includes('stole'))stoleMaterial=c.material}});scene.add(robeModel);document.getElementById('controls').style.display='block';},undefined,()=>createFallbackRobe());
+window.changeStoleColor=c=>{if(stoleMaterial)stoleMaterial.color.set(c)};window.receiveFromFlutter=(cmd,val)=>{if(cmd==='changeColor')changeStoleColor(val);if(cmd==='setAutoRotate')controls.autoRotate=val};
+function animate(){requestAnimationFrame(animate);controls.update();renderer.render(scene,camera)}animate();
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+</script>
+</body></html>

@@ -1,49 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
-void main() => runApp(const TogaApp());
+void main()=>runApp(const MaterialApp(debugShowCheckedModeBanner:false,home:Designer()));
 
-class TogaApp extends StatelessWidget {
-  const TogaApp({super.key});
-  @override Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: const Home(),
-    );
-  }
-}
-
-class Home extends StatefulWidget { const Home({super.key}); @override State<Home> createState()=>_HomeState(); }
-
-class _HomeState extends State<Home> {
-  String couleur = 'Bordeaux';
-  final couleurs = ['Bordeaux','Noir','Vert','Bleu','Or'];
-  final nom = TextEditingController();
-
-  @override Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF7F6FB),
-      appBar: AppBar(title: const Text('Toga DZ - Concepteur'), backgroundColor: Colors.deepPurple, foregroundColor: Colors.white),
-      body: ListView(padding: const EdgeInsets.all(20), children: [
-        Container(height: 280, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24), boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 10)]),
-          child: const Center(child: Icon(Icons.school, size: 120, color: Colors.deepPurple))),
-        const SizedBox(height: 24),
-        const Text('Votre nom pour la broderie', style: TextStyle(fontWeight: FontWeight.w600)),
-        const SizedBox(height: 8),
-        TextField(controller: nom, decoration: InputDecoration(hintText: 'Ex: Amina B.', filled: true, fillColor: Colors.white, border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none))),
-        const SizedBox(height: 24),
-        const Text("Couleur de l'étole", style: TextStyle(fontWeight: FontWeight.w600)),
-        const SizedBox(height: 10),
-        Wrap(spacing: 8, children: couleurs.map((c)=>ChoiceChip(label: Text(c), selected: couleur==c, onSelected: (_)=>setState(()=>couleur=c))).toList()),
-        const SizedBox(height: 30),
-        SizedBox(height: 54, child: ElevatedButton.icon(
-          onPressed: (){
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Design enregistré: ${nom.text} - $couleur')));
-          },
-          icon: const Icon(Icons.check),
-          label: const Text('Enregistrer le design'),
-          style: ElevatedButton.styleFrom(backgroundColor: Colors.deepPurple, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
-        )),
-      ]),
-    );
-  }
+class Designer extends StatefulWidget{const Designer({super.key});@override State<Designer> createState()=>_DesignerState();}
+class _DesignerState extends State<Designer>{
+  late final WebViewController ctrl;
+  String color="#C9A227"; bool auto=true;
+  final colors=[["#C9A227","ذهبي",Colors.amber.shade700],["#800020","عنابي",const Color(0xFF800020)],["#000000","أسود",Colors.black],["#006233","أخضر",const Color(0xFF006233)],["#4B0082","نيلي",const Color(0xFF4B0082)]];
+  @override void initState(){super.initState();ctrl=WebViewController()..setJavaScriptMode(JavaScriptMode.unrestricted)..loadFlutterAsset('assets/3d_viewer.html');}
+  @override Widget build(BuildContext context)=>Scaffold(
+    appBar:AppBar(title:const Text('صمم روبك - Toga DZ'),backgroundColor:Colors.deepPurple,foregroundColor:Colors.white,actions:[IconButton(icon:Icon(auto?Icons.pause:Icons.play_arrow),onPressed:(){setState(()=>auto=!auto);ctrl.runJavaScript('window.receiveFromFlutter("setAutoRotate", $auto)');})]),
+    body:Column(children:[
+      Expanded(flex:4,child:WebViewWidget(controller:ctrl)),
+      Container(padding:const EdgeInsets.all(16),decoration:BoxDecoration(color:Colors.grey.shade50,borderRadius:const BorderRadius.vertical(top:Radius.circular(20))),child:Column(children:[
+        TextField(decoration:InputDecoration(labelText:'اسمك للتطريز',prefixIcon:const Icon(Icons.person),border:OutlineInputBorder(borderRadius:BorderRadius.circular(12))),textAlign:TextAlign.right),
+        const SizedBox(height:12),
+        Row(children:[const Text('لون الوشاح:',style:TextStyle(fontWeight:FontWeight.bold)),const SizedBox(width:10),Expanded(child:SingleChildScrollView(scrollDirection:Axis.horizontal,child:Row(children:colors.map((c)=>GestureDetector(onTap:(){setState(()=>color=c[0] as String);ctrl.runJavaScript('window.receiveFromFlutter("changeColor","${c[0]}")');},child:Container(margin:const EdgeInsets.symmetric(horizontal:4),width:40,height:40,decoration:BoxDecoration(color:c[2] as Color,shape:BoxShape.circle,border:Border.all(color:color==c[0]?Colors.deepPurple:Colors.transparent,width:3))))).toList()))))]),
+        const SizedBox(height:12),
+        SizedBox(width:double.infinity,child:ElevatedButton.icon(onPressed:(){ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content:Text('تم حفظ التصميم! 🎓')));},icon:const Icon(Icons.save),label:const Text('حفظ التصميم'),style:ElevatedButton.styleFrom(backgroundColor:Colors.deepPurple,foregroundColor:Colors.white,padding:const EdgeInsets.symmetric(vertical:14))))
+      ]))
+    ])
+  );
 }
