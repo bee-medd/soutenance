@@ -1,7 +1,7 @@
 name: toga_dz
 description: Toga DZ - Concepteur 3D
 publish_to: 'none'
-version: 1.0.0+1
+version: 1.0.0+2
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -10,9 +10,9 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.6
-  flutter_cube: ^0.1.1
+  flutter_3d_controller: ^1.3.0
 
 flutter:
   uses-material-design: true
   assets:
-    - assets/models/robe.glb
+    - assets/models/
