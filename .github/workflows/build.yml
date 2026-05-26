@@ -18,80 +18,507 @@ jobs:
         flutter-version: '3.22.0'
         channel: 'stable'
     
-    - name: Create simple Flutter app
+    - name: Create Professional App
       run: |
-        # إنشاء تطبيق Flutter جديد
-        flutter create simple_app
-        cd simple_app
+        flutter create detox_pro
+        cd detox_pro
         
-        # إنشاء main.dart بسيط
         cat > lib/main.dart << 'DARTEOF'
         import 'package:flutter/material.dart';
         
         void main() {
-          runApp(const MyApp());
+          runApp(const DetoxProApp());
         }
         
-        class MyApp extends StatelessWidget {
-          const MyApp({super.key});
-          
+        class DetoxProApp extends StatelessWidget {
+          const DetoxProApp({super.key});
+        
           @override
           Widget build(BuildContext context) {
             return MaterialApp(
-              title: 'Detox Pro',
+              title: 'Détox Pro',
               theme: ThemeData(
-                primarySwatch: Colors.blue,
+                primaryColor: const Color(0xFF1A237E),
+                colorScheme: const ColorScheme.dark(
+                  primary: Color(0xFF1A237E),
+                  secondary: Color(0xFF00BCD4),
+                ),
                 useMaterial3: true,
+                fontFamily: 'Poppins',
               ),
-              home: const HomePage(),
+              home: const SplashScreen(),
               debugShowCheckedModeBanner: false,
             );
           }
         }
         
-        class HomePage extends StatelessWidget {
-          const HomePage({super.key});
-          
+        class SplashScreen extends StatefulWidget {
+          const SplashScreen({super.key});
+        
+          @override
+          State<SplashScreen> createState() => _SplashScreenState();
+        }
+        
+        class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
+          late AnimationController _controller;
+          late Animation<double> _fadeAnimation;
+        
+          @override
+          void initState() {
+            super.initState();
+            _controller = AnimationController(
+              duration: const Duration(seconds: 2),
+              vsync: this,
+            );
+            _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(_controller);
+            _controller.forward();
+            
+            Future.delayed(const Duration(seconds: 3), () {
+              Navigator.pushReplacement(
+                context,
+                PageRouteBuilder(
+                  pageBuilder: (_, __, ___) => const HomePage(),
+                  transitionsBuilder: (_, animation, __, child) {
+                    return FadeTransition(opacity: animation, child: child);
+                  },
+                ),
+              );
+            });
+          }
+        
+          @override
+          void dispose() {
+            _controller.dispose();
+            super.dispose();
+          }
+        
           @override
           Widget build(BuildContext context) {
             return Scaffold(
-              appBar: AppBar(
-                title: const Text('Detox Pro - علاج إدمان الإنترنت'),
-                backgroundColor: Colors.blue,
-              ),
-              body: Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.health_and_safety, size: 80, color: Colors.blue),
-                      const SizedBox(height: 20),
-                      const Text(
-                        'مرحباً بك في تطبيق Detox Pro',
-                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 10),
-                      const Text(
-                        'تطبيق لعلاج إدمان الإنترنت',
-                        style: TextStyle(fontSize: 16),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 30),
-                      ElevatedButton(
-                        onPressed: () {},
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
-                          padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-                        ),
-                        child: const Text(
-                          'ابدأ الآن',
-                          style: TextStyle(fontSize: 18, color: Colors.white),
-                        ),
-                      ),
+              body: Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Color(0xFF1A237E),
+                      Color(0xFF00BCD4),
                     ],
                   ),
+                ),
+                child: Center(
+                  child: FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 3),
+                          ),
+                          child: const Icon(
+                            Icons.health_and_safety,
+                            size: 80,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 30),
+                        const Text(
+                          'DÉTOX PRO',
+                          style: TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            letterSpacing: 2,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        const Text(
+                          'Réinitialisez votre vie numérique',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.white70,
+                          ),
+                        ),
+                        const SizedBox(height: 40),
+                        const CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }
+        }
+        
+        class HomePage extends StatefulWidget {
+          const HomePage({super.key});
+        
+          @override
+          State<HomePage> createState() => _HomePageState();
+        }
+        
+        class _HomePageState extends State<HomePage> {
+          int _selectedIndex = 0;
+        
+          final List<Widget> _pages = [
+            const DashboardPage(),
+            const StatisticsPage(),
+            const ProfilePage(),
+          ];
+        
+          @override
+          Widget build(BuildContext context) {
+            return Scaffold(
+              body: _pages[_selectedIndex],
+              bottomNavigationBar: Container(
+                decoration: BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 10,
+                    ),
+                  ],
+                ),
+                child: BottomNavigationBar(
+                  currentIndex: _selectedIndex,
+                  onTap: (index) => setState(() => _selectedIndex = index),
+                  backgroundColor: const Color(0xFF1A237E),
+                  selectedItemColor: const Color(0xFF00BCD4),
+                  unselectedItemColor: Colors.grey,
+                  type: BottomNavigationBarType.fixed,
+                  elevation: 0,
+                  items: const [
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.dashboard),
+                      label: 'Tableau de bord',
+                    ),
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.bar_chart),
+                      label: 'Statistiques',
+                    ),
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.person),
+                      label: 'Profil',
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+        }
+        
+        class DashboardPage extends StatelessWidget {
+          const DashboardPage({super.key});
+        
+          @override
+          Widget build(BuildContext context) {
+            return Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Color(0xFF1A237E),
+                    Color(0xFF0D47A1),
+                  ],
+                ),
+              ),
+              child: SafeArea(
+                child: CustomScrollView(
+                  slivers: [
+                    SliverAppBar(
+                      expandedHeight: 200,
+                      floating: true,
+                      backgroundColor: Colors.transparent,
+                      flexibleSpace: FlexibleSpaceBar(
+                        title: const Text(
+                          'Bonjour, Amine',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        background: Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                const Color(0xFF1A237E),
+                                const Color(0xFF00BCD4).withOpacity(0.3),
+                              ],
+                            ),
+                          ),
+                          child: const Center(
+                            child: Icon(
+                              Icons.waving_hand,
+                              size: 60,
+                              color: Colors.white70,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    SliverPadding(
+                      padding: const EdgeInsets.all(16),
+                      sliver: SliverList(
+                        delegate: SliverChildListDelegate([
+                          _buildStatCard(
+                            'Temps d\'écran aujourd\'hui',
+                            '4h 32min',
+                            Icons.phone_android,
+                            const Color(0xFF00BCD4),
+                          ),
+                          const SizedBox(height: 16),
+                          _buildStatCard(
+                            'Applications les plus utilisées',
+                            '8 applications',
+                            Icons.apps,
+                            const Color(0xFFFF5722),
+                          ),
+                          const SizedBox(height: 16),
+                          _buildStatCard(
+                            'Objectif quotidien',
+                            '6 heures',
+                            Icons.flag,
+                            const Color(0xFF4CAF50),
+                          ),
+                          const SizedBox(height: 24),
+                          _buildMotivationCard(),
+                        ]),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+        
+          Widget _buildStatCard(String title, String value, IconData icon, Color color) {
+            return Card(
+              elevation: 8,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Colors.white.withOpacity(0.1),
+                      Colors.white.withOpacity(0.05),
+                    ],
+                  ),
+                ),
+                child: ListTile(
+                  contentPadding: const EdgeInsets.all(20),
+                  leading: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: color.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    child: Icon(icon, color: color, size: 30),
+                  ),
+                  title: Text(
+                    title,
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 14,
+                    ),
+                  ),
+                  subtitle: Text(
+                    value,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }
+        
+          Widget _buildMotivationCard() {
+            return Card(
+              elevation: 8,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              child: Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Color(0xFF00BCD4),
+                      Color(0xFF1A237E),
+                    ],
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Row(
+                      children: [
+                        Icon(Icons.emoji_emotions, color: Colors.white),
+                        SizedBox(width: 10),
+                        Text(
+                          'Citation du jour',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    const Text(
+                      '"La meilleure façon de prédire votre avenir est de le créer."',
+                      style: TextStyle(color: Colors.white70, fontSize: 14, fontStyle: FontStyle.italic),
+                    ),
+                    const SizedBox(height: 10),
+                    Align(
+                      alignment: Alignment.bottomRight,
+                      child: Text(
+                        '- Abraham Lincoln',
+                        style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+        }
+        
+        class StatisticsPage extends StatelessWidget {
+          const StatisticsPage({super.key});
+        
+          @override
+          Widget build(BuildContext context) {
+            return Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Color(0xFF1A237E),
+                    Color(0xFF0D47A1),
+                  ],
+                ),
+              ),
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.show_chart,
+                      size: 80,
+                      color: Color(0xFF00BCD4),
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      'Statistiques détaillées',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white.withOpacity(0.8),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      'Bientôt disponible...',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.white.withOpacity(0.5),
+                      ),
+                    ),
+                    const SizedBox(height: 30),
+                    LinearProgressIndicator(
+                      value: 0.6,
+                      backgroundColor: Colors.white.withOpacity(0.1),
+                      valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF00BCD4)),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+        }
+        
+        class ProfilePage extends StatelessWidget {
+          const ProfilePage({super.key});
+        
+          @override
+          Widget build(BuildContext context) {
+            return Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Color(0xFF1A237E),
+                    Color(0xFF0D47A1),
+                  ],
+                ),
+              ),
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(30),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: const Color(0xFF00BCD4), width: 3),
+                      ),
+                      child: const Icon(
+                        Icons.person,
+                        size: 80,
+                        color: Color(0xFF00BCD4),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      'Amine Benali',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white.withOpacity(0.8),
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      'amine@detoxpro.com',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.white.withOpacity(0.5),
+                      ),
+                    ),
+                    const SizedBox(height: 30),
+                    ElevatedButton.icon(
+                      onPressed: () {},
+                      icon: const Icon(Icons.settings),
+                      label: const Text('Paramètres'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF00BCD4),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             );
@@ -99,10 +526,9 @@ jobs:
         }
         DARTEOF
         
-        # تحديث pubspec.yaml ليكون بسيطاً
         cat > pubspec.yaml << 'PUBEOF'
-        name: simple_app
-        description: Detox Pro App
+        name: detox_pro
+        description: Application de détox numérique professionnelle
         version: 1.0.0+1
         
         environment:
@@ -116,16 +542,13 @@ jobs:
           uses-material-design: true
         PUBEOF
         
-        # بناء التطبيق
         flutter clean
         flutter pub get
         flutter build apk --release
-        
-        # نسخ APK إلى مكان يمكن الوصول إليه
         cp build/app/outputs/flutter-apk/app-release.apk ../detox-pro.apk
         
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: detox-pro-app
+        name: detox-pro-french-app
         path: detox-pro.apk
