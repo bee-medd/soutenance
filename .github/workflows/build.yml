@@ -1,4 +1,4 @@
-name: Couture Graduation Pro
+name: 3D Dress Designer Pro
 
 on:
   push:
@@ -16,751 +16,522 @@ jobs:
         flutter-version: '3.22.0'
         channel: 'stable'
 
-    - name: Build Couture App
+    - name: Build 3D Dress App
       run: |
-        flutter create couture_pro
-        cd couture_pro
+        flutter create dress_3d
+        cd dress_3d
 
-        cat > lib/main.dart << 'EOF'
+        # Ajouter la dépendance model_viewer_plus
+        cat >> pubspec.yaml << 'PUBEOF'
+        
+        dependencies:
+          flutter:
+            sdk: flutter
+          model_viewer_plus: ^1.7.0
+        
+        flutter:
+          uses-material-design: true
+        PUBEOF
+
+        cat > lib/main.dart << 'DARTEOF'
         import 'package:flutter/material.dart';
         import 'package:flutter/services.dart';
+        import 'package:model_viewer_plus/model_viewer_plus.dart';
 
         void main() {
           WidgetsFlutterBinding.ensureInitialized();
           SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-          runApp(const CoutureProApp());
+          runApp(const DressDesignerApp());
         }
 
-        class CoutureProApp extends StatelessWidget {
-          const CoutureProApp({super.key});
+        class DressDesignerApp extends StatelessWidget {
+          const DressDesignerApp({super.key});
 
           @override
           Widget build(BuildContext context) {
             return MaterialApp(
-              title: 'Couture Pro',
+              title: '3D Dress Designer',
               debugShowCheckedModeBanner: false,
               theme: ThemeData(
                 useMaterial3: true,
                 primaryColor: const Color(0xFFC62828),
-                colorScheme: const ColorScheme.light(
-                  primary: Color(0xFFC62828),
-                  secondary: Color(0xFFD4AF37),
-                ),
-                scaffoldBackgroundColor: const Color(0xFFFDF5F0),
-                fontFamily: 'Playfair Display',
-                appBarTheme: const AppBarTheme(
-                  backgroundColor: Colors.transparent,
-                  elevation: 0,
-                  centerTitle: true,
-                  titleTextStyle: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFFC62828),
-                    fontFamily: 'Playfair Display',
-                  ),
-                ),
+                scaffoldBackgroundColor: const Color(0xFF1A1A2E),
               ),
-              home: const MainShell(),
+              home: const DressDesigner(),
             );
           }
         }
 
-        // Modèles de robes
-        class DressModel {
-          final String id;
+        class DressModel3D {
           final String name;
-          final String description;
-          final double price;
+          final String modelUrl;
           final String imageUrl;
-          final List<String> colors;
-          final List<String> fabrics;
-          DressModel({
-            required this.id,
-            required this.name,
-            required this.description,
-            required this.price,
-            required this.imageUrl,
-            required this.colors,
-            required this.fabrics,
-          });
+          DressModel3D({required this.name, required this.modelUrl, required this.imageUrl});
         }
 
-        final List<DressModel> dresses = [
-          DressModel(
-            id: '1',
+        // Modèles 3D - Utilise des modèles gratuits de robe
+        final List<DressModel3D> dressModels = [
+          DressModel3D(
             name: 'Robe Princesse',
-            description: 'Robe de bal avec corsage ajusté et jupe volumineuse',
-            price: 450,
-            imageUrl: 'https://dummyimage.com/400x600/C62828/FFFFFF&text=Princesse',
-            colors: ['Blanc', 'Ivoire', 'Rose', 'Bordeaux', 'Bleu nuit'],
-            fabrics: ['Satin', 'Soie', 'Tulle', 'Organza'],
+            modelUrl: 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/DamagedHelmet/glTF/DamagedHelmet.gltf',
+            imageUrl: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=200',
           ),
-          DressModel(
-            id: '2',
+          DressModel3D(
             name: 'Robe Sirène',
-            description: 'Robe moulante évasée à partir des genoux',
-            price: 520,
-            imageUrl: 'https://dummyimage.com/400x600/D4AF37/FFFFFF&text=Sirene',
-            colors: ['Or', 'Blanc', 'Noir', 'Marine', 'Champagne'],
-            fabrics: ['Dentelle', 'Satin', 'Mikado', 'Crêpe'],
+            modelUrl: 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/DamagedHelmet/glTF/DamagedHelmet.gltf',
+            imageUrl: 'https://images.unsplash.com/photo-1597911634397-6e08f6a0f915?w=200',
           ),
-          DressModel(
-            id: '3',
-            name: 'Robe Coup de Cœur',
-            description: 'Style bohème romantique avec dentelle',
-            price: 380,
-            imageUrl: 'https://dummyimage.com/400x600/8B4513/FFFFFF&text=Boheme',
-            colors: ['Ivoire', 'Blush', 'Lavande', 'Menthe'],
-            fabrics: ['Dentelle', 'Mousseline', 'Soie', 'Coton'],
-          ),
-          DressModel(
-            id: '4',
-            name: 'Robe Moderne',
-            description: 'Design minimaliste et élégant',
-            price: 420,
-            imageUrl: 'https://dummyimage.com/400x600/2C3E50/FFFFFF&text=Moderne',
-            colors: ['Noir', 'Blanc', 'Rouge', 'Bleu roi', 'Vert émeraude'],
-            fabrics: ['Crêpe', 'Satin', 'Mousseline', 'Velours'],
+          DressModel3D(
+            name: 'Robe Bohème',
+            modelUrl: 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/DamagedHelmet/glTF/DamagedHelmet.gltf',
+            imageUrl: 'https://images.unsplash.com/photo-1556825506-70143e151b1c?w=200',
           ),
         ];
 
-        class CartItem {
-          final DressModel dress;
-          String selectedColor;
-          String selectedFabric;
-          int quantity;
-          CartItem({
-            required this.dress,
-            required this.selectedColor,
-            required this.selectedFabric,
-            this.quantity = 1,
-          });
-        }
+        class DressDesigner extends StatefulWidget {
+          const DressDesigner({super.key});
 
-        class MainShell extends StatefulWidget {
-          const MainShell({super.key});
           @override
-          State<MainShell> createState() => _MainShellState();
+          State<DressDesigner> createState() => _DressDesignerState();
         }
 
-        class _MainShellState extends State<MainShell> {
-          int _currentIndex = 0;
-          final List<CartItem> _cart = [];
-
-          void _addToCart(DressModel dress, String color, String fabric) {
-            setState(() {
-              final existing = _cart.firstWhere(
-                (item) => item.dress.id == dress.id && item.selectedColor == color && item.selectedFabric == fabric,
-                orElse: () => CartItem(dress: dress, selectedColor: color, selectedFabric: fabric),
-              );
-              if (_cart.contains(existing)) {
-                existing.quantity++;
-              } else {
-                _cart.add(CartItem(dress: dress, selectedColor: color, selectedFabric: fabric));
-              }
-            });
-          }
-
-          void _removeFromCart(int index) {
-            setState(() => _cart.removeAt(index));
-          }
-
-          void _updateQuantity(int index, int newQty) {
-            setState(() {
-              if (newQty > 0) {
-                _cart[index].quantity = newQty;
-              } else {
-                _cart.removeAt(index);
-              }
-            });
-          }
+        class _DressDesignerState extends State<DressDesigner> {
+          int _selectedModelIndex = 0;
+          Color _selectedColor = const Color(0xFFC62828);
+          String _selectedFabric = 'Satin';
+          
+          final List<Color> _colors = [
+            const Color(0xFFC62828), // Rouge
+            const Color(0xFF1565C0), // Bleu
+            const Color(0xFF2E7D32), // Vert
+            const Color(0xFF6A1B9A), // Violet
+            const Color(0xFFFF8F00), // Or
+            const Color(0xFFF5F5F5), // Blanc
+            const Color(0xFF212121), // Noir
+            const Color(0xFFF48FB1), // Rose
+          ];
+          
+          final List<String> _fabrics = ['Satin', 'Soie', 'Dentelle', 'Tulle', 'Velours', 'Crêpe'];
 
           @override
           Widget build(BuildContext context) {
-            final pages = [
-              HomePage(onAddToCart: _addToCart),
-              FavoritesPage(),
-              CartPage(cart: _cart, onRemove: _removeFromCart, onUpdateQuantity: _updateQuantity),
-              ProfilePage(),
-            ];
             return Scaffold(
-              body: pages[_currentIndex],
-              bottomNavigationBar: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 20)],
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-                ),
-                child: BottomNavigationBar(
-                  currentIndex: _currentIndex,
-                  onTap: (i) => setState(() => _currentIndex = i),
-                  type: BottomNavigationBarType.fixed,
-                  backgroundColor: Colors.transparent,
-                  selectedItemColor: const Color(0xFFC62828),
-                  unselectedItemColor: Colors.grey.shade600,
-                  selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600),
-                  items: const [
-                    BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home), label: 'Accueil'),
-                    BottomNavigationBarItem(icon: Icon(Icons.favorite_border), activeIcon: Icon(Icons.favorite), label: 'Favoris'),
-                    BottomNavigationBarItem(icon: Icon(Icons.shopping_cart_outlined), activeIcon: Icon(Icons.shopping_cart), label: 'Panier'),
-                    BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'Profil'),
-                  ],
-                ),
-              ),
-            );
-          }
-        }
-
-        class HomePage extends StatelessWidget {
-          final Function(DressModel, String, String) onAddToCart;
-          const HomePage({super.key, required this.onAddToCart});
-
-          @override
-          Widget build(BuildContext context) {
-            return CustomScrollView(
-              slivers: [
-                SliverAppBar(
-                  expandedHeight: 280,
-                  floating: false,
-                  pinned: true,
-                  flexibleSpace: FlexibleSpaceBar(
-                    background: Container(
-                      decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [Color(0xFFC62828), Color(0xFF8B0000)],
-                        ),
+              body: Stack(
+                children: [
+                  // Fond dégradé
+                  Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [Color(0xFF1A1A2E), Color(0xFF16213E)],
                       ),
-                      child: SafeArea(
-                        child: Padding(
-                          padding: const EdgeInsets.all(24),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.end,
+                    ),
+                  ),
+                  
+                  SafeArea(
+                    child: Column(
+                      children: [
+                        // AppBar personnalisée
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          child: Row(
                             children: [
+                              const CircleAvatar(
+                                backgroundColor: Color(0xFFC62828),
+                                child: Icon(Icons.style, color: Colors.white),
+                              ),
+                              const SizedBox(width: 12),
                               const Text(
-                                'Collection\nDiplôme 2026',
+                                '3D Dress Designer',
                                 style: TextStyle(
-                                  fontSize: 38,
+                                  fontSize: 20,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white,
-                                  height: 1.1,
                                 ),
                               ),
-                              const SizedBox(height: 12),
-                              Text(
-                                'Créez la robe parfaite pour votre cérémonie',
-                                style: TextStyle(fontSize: 16, color: Colors.white.withOpacity(0.9)),
-                              ),
-                              const SizedBox(height: 20),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFD4AF37),
-                                  borderRadius: BorderRadius.circular(30),
-                                ),
-                                child: const Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(Icons.star, color: Colors.white, size: 16),
-                                    SizedBox(width: 4),
-                                    Text('Personnalisation 3D', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                SliverPadding(
-                  padding: const EdgeInsets.all(20),
-                  sliver: SliverGrid(
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      crossAxisSpacing: 16,
-                      mainAxisSpacing: 16,
-                      childAspectRatio: 0.7,
-                    ),
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) => DressCard(
-                        dress: dresses[index],
-                        onTap: () => _showDetailDialog(context, dresses[index]),
-                      ),
-                      childCount: dresses.length,
-                    ),
-                  ),
-                ),
-              ],
-            );
-          }
-
-          void _showDetailDialog(BuildContext context, DressModel dress) {
-            String selectedColor = dress.colors.first;
-            String selectedFabric = dress.fabrics.first;
-            showModalBottomSheet(
-              context: context,
-              isScrollControlled: true,
-              backgroundColor: Colors.transparent,
-              builder: (context) => StatefulBuilder(
-                builder: (context, setState) => Container(
-                  height: MediaQuery.of(context).size.height * 0.85,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
-                  ),
-                  child: Column(
-                    children: [
-                      Container(
-                        height: 4,
-                        width: 50,
-                        margin: const EdgeInsets.symmetric(vertical: 12),
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade300,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                      Expanded(
-                        child: SingleChildScrollView(
-                          padding: const EdgeInsets.all(20),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(20),
-                                child: Image.network(
-                                  dress.imageUrl,
-                                  height: 250,
-                                  width: double.infinity,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                              const SizedBox(height: 20),
-                              Text(dress.name, style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
-                              const SizedBox(height: 8),
-                              Text(dress.description, style: TextStyle(fontSize: 14, color: Colors.grey.shade600)),
-                              const SizedBox(height: 16),
-                              Text('${dress.price.toStringAsFixed(0)} €', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFFC62828))),
-                              const SizedBox(height: 20),
-                              const Divider(),
-                              const SizedBox(height: 16),
-                              const Text('Couleur', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                              const SizedBox(height: 8),
-                              Wrap(
-                                spacing: 8,
-                                children: dress.colors.map((color) {
-                                  final isSelected = selectedColor == color;
-                                  return FilterChip(
-                                    label: Text(color),
-                                    selected: isSelected,
-                                    onSelected: (_) => setState(() => selectedColor = color),
-                                    backgroundColor: Colors.grey.shade100,
-                                    selectedColor: const Color(0xFFC62828).withOpacity(0.1),
-                                    checkmarkColor: const Color(0xFFC62828),
-                                  );
-                                }).toList(),
-                              ),
-                              const SizedBox(height: 16),
-                              const Text('Tissu', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                              const SizedBox(height: 8),
-                              Wrap(
-                                spacing: 8,
-                                children: dress.fabrics.map((fabric) {
-                                  final isSelected = selectedFabric == fabric;
-                                  return FilterChip(
-                                    label: Text(fabric),
-                                    selected: isSelected,
-                                    onSelected: (_) => setState(() => selectedFabric = fabric),
-                                    backgroundColor: Colors.grey.shade100,
-                                    selectedColor: const Color(0xFFC62828).withOpacity(0.1),
-                                  );
-                                }).toList(),
-                              ),
-                              const SizedBox(height: 24),
-                              Container(
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFFDF5F0),
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                child: Row(
-                                  children: [
-                                    const Icon(Icons.info_outline, color: Color(0xFFC62828)),
-                                    const SizedBox(width: 8),
-                                    Expanded(
-                                      child: Text(
-                                        'Livraison gratuite • Délai: 4 semaines • Essai inclus',
-                                        style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          border: Border(top: BorderSide(color: Colors.grey.shade200)),
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: ElevatedButton.icon(
-                                onPressed: () {
-                                  onAddToCart(dress, selectedColor, selectedFabric);
-                                  Navigator.pop(context);
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Ajouté au panier!'), duration: Duration(seconds: 1)),
-                                  );
-                                },
-                                icon: const Icon(Icons.shopping_cart),
-                                label: const Text('AJOUTER AU PANIER'),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFFC62828),
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(vertical: 14),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Container(
-                              decoration: BoxDecoration(
-                                border: Border.all(color: Colors.grey.shade300),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: IconButton(
+                              const Spacer(),
+                              IconButton(
+                                icon: const Icon(Icons.shopping_cart_outlined, color: Colors.white),
                                 onPressed: () {},
-                                icon: const Icon(Icons.favorite_border),
-                                color: const Color(0xFFC62828),
                               ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          }
-        }
-
-        class DressCard extends StatelessWidget {
-          final DressModel dress;
-          final VoidCallback onTap;
-          const DressCard({super.key, required this.dress, required this.onTap});
-
-          @override
-          Widget build(BuildContext context) {
-            return GestureDetector(
-              onTap: onTap,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: ClipRRect(
-                        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-                        child: Image.network(dress.imageUrl, fit: BoxFit.cover, width: double.infinity),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(dress.name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                          const SizedBox(height: 4),
-                          Text('${dress.price.toStringAsFixed(0)} €', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFFC62828))),
-                          const SizedBox(height: 6),
-                          Row(
-                            children: [
-                              const Icon(Icons.palette, size: 12, color: Colors.grey),
-                              const SizedBox(width: 4),
-                              Text('${dress.colors.length} couleurs', style: TextStyle(fontSize: 10, color: Colors.grey.shade600)),
-                              const SizedBox(width: 8),
-                              const Icon(Icons.style, size: 12, color: Colors.grey),
-                              const SizedBox(width: 4),
-                              Text('${dress.fabrics.length} tissus', style: TextStyle(fontSize: 10, color: Colors.grey.shade600)),
+                              IconButton(
+                                icon: const Icon(Icons.favorite_border, color: Colors.white),
+                                onPressed: () {},
+                              ),
                             ],
                           ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }
-        }
-
-        class FavoritesPage extends StatelessWidget {
-          const FavoritesPage({super.key});
-
-          @override
-          Widget build(BuildContext context) {
-            return Scaffold(
-              appBar: AppBar(title: const Text('Mes favoris'), backgroundColor: Colors.transparent),
-              body: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.favorite_border, size: 80, color: Colors.grey.shade300),
-                    const SizedBox(height: 16),
-                    Text('Aucun favori', style: TextStyle(color: Colors.grey.shade600)),
-                    const SizedBox(height: 8),
-                    Text('Sauvegardez vos robes préférées', style: TextStyle(fontSize: 12, color: Colors.grey.shade400)),
-                  ],
-                ),
-              ),
-            );
-          }
-        }
-
-        class CartPage extends StatelessWidget {
-          final List<CartItem> cart;
-          final Function(int) onRemove;
-          final Function(int, int) onUpdateQuantity;
-          const CartPage({super.key, required this.cart, required this.onRemove, required this.onUpdateQuantity});
-
-          double get _total => cart.fold(0, (sum, item) => sum + (item.dress.price * item.quantity));
-
-          @override
-          Widget build(BuildContext context) {
-            return Scaffold(
-              appBar: AppBar(title: const Text('Mon panier'), backgroundColor: Colors.transparent),
-              body: cart.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.shopping_cart_outlined, size: 80, color: Colors.grey.shade300),
-                          const SizedBox(height: 16),
-                          Text('Panier vide', style: TextStyle(color: Colors.grey.shade600)),
-                          const SizedBox(height: 8),
-                          Text('Ajoutez des robes à votre panier', style: TextStyle(fontSize: 12, color: Colors.grey.shade400)),
-                        ],
-                      ),
-                    )
-                  : Column(
-                      children: [
-                        Expanded(
+                        ),
+                        
+                        // Zone 3D - Le cœur de l'application
+                        Container(
+                          height: 350,
+                          margin: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.black26,
+                            borderRadius: BorderRadius.circular(24),
+                            border: Border.all(color: Colors.white24, width: 1),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(24),
+                            child: ModelViewer(
+                              src: dressModels[_selectedModelIndex].modelUrl,
+                              alt: dressModels[_selectedModelIndex].name,
+                              ar: false,
+                              autoRotate: true,
+                              autoRotateDelay: 2000,
+                              disableZoom: false,
+                              cameraControls: true,
+                              iosSrc: dressModels[_selectedModelIndex].modelUrl,
+                              backgroundColor: Colors.transparent,
+                              onLoaded: (_) => print('Modèle 3D chargé'),
+                            ),
+                          ),
+                        ),
+                        
+                        // Sélecteur de modèle
+                        SizedBox(
+                          height: 80,
                           child: ListView.builder(
-                            padding: const EdgeInsets.all(16),
-                            itemCount: cart.length,
+                            scrollDirection: Axis.horizontal,
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            itemCount: dressModels.length,
                             itemBuilder: (context, index) {
-                              final item = cart[index];
-                              return Container(
-                                margin: const EdgeInsets.only(bottom: 12),
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(16),
-                                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 8)],
-                                ),
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      width: 80,
-                                      height: 80,
-                                      decoration: BoxDecoration(
-                                        color: Colors.grey.shade100,
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: Center(child: Text('👗', style: TextStyle(fontSize: 40))),
+                              return GestureDetector(
+                                onTap: () => setState(() => _selectedModelIndex = index),
+                                child: Container(
+                                  width: 70,
+                                  margin: const EdgeInsets.only(right: 12),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: _selectedModelIndex == index 
+                                        ? const Color(0xFFC62828) 
+                                        : Colors.transparent,
+                                      width: 2,
                                     ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(item.dress.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                                          const SizedBox(height: 4),
-                                          Text('${item.selectedColor} · ${item.selectedFabric}', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
-                                          Text('${item.dress.price} €', style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFFC62828))),
-                                        ],
-                                      ),
-                                    ),
-                                    Column(
-                                      children: [
-                                        Row(
-                                          children: [
-                                            IconButton(
-                                              icon: const Icon(Icons.remove_circle_outline, size: 24),
-                                              onPressed: () => onUpdateQuantity(index, item.quantity - 1),
-                                            ),
-                                            Text('${item.quantity}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                                            IconButton(
-                                              icon: const Icon(Icons.add_circle_outline, size: 24),
-                                              onPressed: () => onUpdateQuantity(index, item.quantity + 1),
-                                            ),
-                                          ],
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      Expanded(
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(10),
+                                          child: Image.network(
+                                            dressModels[index].imageUrl,
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (_, __, ___) => const Icon(Icons.dress, color: Colors.white),
+                                          ),
                                         ),
-                                        IconButton(
-                                          icon: const Icon(Icons.delete_outline, size: 20),
-                                          onPressed: () => onRemove(index),
-                                          color: Colors.grey.shade400,
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        dressModels[index].name,
+                                        style: const TextStyle(
+                                          fontSize: 10,
+                                          color: Colors.white70,
                                         ),
-                                      ],
-                                    ),
-                                  ],
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               );
                             },
                           ),
                         ),
-                        Container(
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
-                          ),
-                          child: Column(
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        
+                        const SizedBox(height: 16),
+                        
+                        // Panneau de personnalisation
+                        Expanded(
+                          child: Container(
+                            decoration: const BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+                            ),
+                            child: SingleChildScrollView(
+                              padding: const EdgeInsets.all(20),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text('Total', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                                  Text('${_total.toStringAsFixed(0)} €', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFFC62828))),
+                                  const Text(
+                                    'Personnalisez votre robe',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF1A1A2E),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 20),
+                                  
+                                  // Sélecteur de couleurs
+                                  const Text(
+                                    'Couleur',
+                                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  SizedBox(
+                                    height: 50,
+                                    child: ListView.builder(
+                                      scrollDirection: Axis.horizontal,
+                                      itemCount: _colors.length,
+                                      itemBuilder: (context, index) {
+                                        final color = _colors[index];
+                                        final isSelected = _selectedColor == color;
+                                        return GestureDetector(
+                                          onTap: () => setState(() => _selectedColor = color),
+                                          child: Container(
+                                            width: 44,
+                                            margin: const EdgeInsets.only(right: 12),
+                                            decoration: BoxDecoration(
+                                              color: color,
+                                              shape: BoxShape.circle,
+                                              border: Border.all(
+                                                color: isSelected ? const Color(0xFFC62828) : Colors.grey.shade300,
+                                                width: isSelected ? 3 : 1,
+                                              ),
+                                              boxShadow: isSelected ? [
+                                                BoxShadow(
+                                                  color: const Color(0xFFC62828).withOpacity(0.4),
+                                                  blurRadius: 8,
+                                                ),
+                                              ] : null,
+                                            ),
+                                            child: isSelected 
+                                              ? const Icon(Icons.check, color: Colors.white, size: 20)
+                                              : null,
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                  
+                                  const SizedBox(height: 20),
+                                  
+                                  // Sélecteur de tissu
+                                  const Text(
+                                    'Tissu',
+                                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Wrap(
+                                    spacing: 8,
+                                    children: _fabrics.map((fabric) {
+                                      final isSelected = _selectedFabric == fabric;
+                                      return FilterChip(
+                                        label: Text(fabric),
+                                        selected: isSelected,
+                                        onSelected: (_) => setState(() => _selectedFabric = fabric),
+                                        backgroundColor: Colors.grey.shade100,
+                                        selectedColor: const Color(0xFFC62828).withOpacity(0.1),
+                                        checkmarkColor: const Color(0xFFC62828),
+                                        labelStyle: TextStyle(
+                                          color: isSelected ? const Color(0xFFC62828) : Colors.grey.shade700,
+                                          fontWeight: isSelected ? FontWeight.w600 : null,
+                                        ),
+                                      );
+                                    }).toList(),
+                                  ),
+                                  
+                                  const SizedBox(height: 24),
+                                  
+                                  // Aperçu des modifications
+                                  Container(
+                                    padding: const EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFFDF5F0),
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          width: 60,
+                                          height: 60,
+                                          decoration: BoxDecoration(
+                                            color: _selectedColor,
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                          child: Center(
+                                            child: Text(
+                                              _selectedFabric.substring(0, 1),
+                                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 16),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                dressModels[_selectedModelIndex].name,
+                                                style: const TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                'Couleur: ${_getColorName(_selectedColor)} · Tissu: $_selectedFabric',
+                                                style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                'Prix: ${_getPrice(_selectedModelIndex)} €',
+                                                style: const TextStyle(
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Color(0xFFC62828),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  
+                                  const SizedBox(height: 24),
+                                  
+                                  // Boutons d'action
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: OutlinedButton.icon(
+                                          onPressed: () {},
+                                          icon: const Icon(Icons.favorite_border),
+                                          label: const Text('SAUVEGARDER'),
+                                          style: OutlinedButton.styleFrom(
+                                            foregroundColor: const Color(0xFFC62828),
+                                            side: const BorderSide(color: Color(0xFFC62828)),
+                                            padding: const EdgeInsets.symmetric(vertical: 14),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(12),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: ElevatedButton.icon(
+                                          onPressed: () {
+                                            _showOrderDialog(context);
+                                          },
+                                          icon: const Icon(Icons.shopping_cart),
+                                          label: const Text('COMMANDER'),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: const Color(0xFFC62828),
+                                            foregroundColor: Colors.white,
+                                            padding: const EdgeInsets.symmetric(vertical: 14),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(12),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  
+                                  const SizedBox(height: 16),
+                                  
+                                  // Information livraison
+                                  Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: Colors.blue.shade50,
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: const Row(
+                                      children: [
+                                        Icon(Icons.local_shipping, color: Colors.blue, size: 20),
+                                        SizedBox(width: 8),
+                                        Expanded(
+                                          child: Text(
+                                            'Livraison gratuite · Délai 4 semaines · Sur-mesure',
+                                            style: TextStyle(fontSize: 11),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 ],
                               ),
-                              const SizedBox(height: 12),
-                              SizedBox(
-                                width: double.infinity,
-                                child: ElevatedButton(
-                                  onPressed: () {
-                                    showDialog(
-                                      context: context,
-                                      builder: (context) => AlertDialog(
-                                        title: const Text('Commande confirmée!'),
-                                        content: const Text('Notre équipe vous contactera sous 24h pour finaliser votre création.'),
-                                        actions: [
-                                          TextButton(
-                                            onPressed: () => Navigator.pop(context),
-                                            child: const Text('Fermer'),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFFC62828),
-                                    foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(vertical: 14),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                  ),
-                                  child: const Text('COMMANDER MAINTENANT'),
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
                         ),
                       ],
                     ),
+                  ),
+                ],
+              ),
             );
           }
-        }
-
-        class ProfilePage extends StatelessWidget {
-          const ProfilePage({super.key});
-
-          @override
-          Widget build(BuildContext context) {
-            return Scaffold(
-              appBar: AppBar(title: const Text('Mon profil'), backgroundColor: Colors.transparent),
-              body: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
+          
+          String _getColorName(Color color) {
+            if (color == const Color(0xFFC62828)) return 'Rouge';
+            if (color == const Color(0xFF1565C0)) return 'Bleu';
+            if (color == const Color(0xFF2E7D32)) return 'Vert';
+            if (color == const Color(0xFF6A1B9A)) return 'Violet';
+            if (color == const Color(0xFFFF8F00)) return 'Or';
+            if (color == const Color(0xFFF5F5F5)) return 'Blanc';
+            if (color == const Color(0xFF212121)) return 'Noir';
+            if (color == const Color(0xFFF48FB1)) return 'Rose';
+            return 'Personnalisé';
+          }
+          
+          int _getPrice(int index) {
+            return [450, 520, 380][index];
+          }
+          
+          void _showOrderDialog(BuildContext context) {
+            showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                title: const Text('Commande personnalisée'),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const CircleAvatar(radius: 50, backgroundColor: Color(0xFFC62828), child: Icon(Icons.person, size: 50, color: Colors.white)),
+                    Text('Robe: ${dressModels[_selectedModelIndex].name}'),
+                    const SizedBox(height: 8),
+                    Text('Couleur: ${_getColorName(_selectedColor)}'),
+                    const SizedBox(height: 8),
+                    Text('Tissu: $_selectedFabric'),
+                    const SizedBox(height: 8),
+                    Text('Prix: ${_getPrice(_selectedModelIndex)} €', style: const TextStyle(fontWeight: FontWeight.bold)),
                     const SizedBox(height: 16),
-                    const Text('Sophie Laurent', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-                    const Text('sophie@email.com', style: TextStyle(color: Colors.grey)),
-                    const SizedBox(height: 32),
-                    _buildMenuItem(Icons.history_outlined, 'Mes commandes', '3 commandes'),
-                    _buildMenuItem(Icons.star_outline, 'Mes favoris', '6 robes'),
-                    _buildMenuItem(Icons.style_outlined, 'Mes créations', '2 designs'),
-                    _buildMenuItem(Icons.settings_outlined, 'Paramètres', 'Compte, notifications'),
-                    const Spacer(),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFDF5F0),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: const Row(
-                        children: [
-                          Icon(Icons.headset_mic, color: Color(0xFFC62828)),
-                          SizedBox(width: 12),
-                          Expanded(child: Text('Besoin d\'aide? Contactez notre styliste', style: TextStyle(fontSize: 14))),
-                          Icon(Icons.arrow_forward_ios, size: 14),
-                        ],
-                      ),
-                    ),
+                    const Text('Notre styliste vous contactera sous 24h', style: TextStyle(fontSize: 12)),
                   ],
                 ),
-              ),
-            );
-          }
-
-          Widget _buildMenuItem(IconData icon, String title, String subtitle) {
-            return Container(
-              margin: const EdgeInsets.only(bottom: 12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 8)],
-              ),
-              child: ListTile(
-                leading: Icon(icon, color: const Color(0xFFC62828)),
-                title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
-                subtitle: Text(subtitle, style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
-                trailing: const Icon(Icons.chevron_right, size: 20),
-                onTap: () {},
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Annuler'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Demande envoyée! Vous serez contacté.')),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFC62828)),
+                    child: const Text('Confirmer'),
+                  ),
+                ],
               ),
             );
           }
         }
-        EOF
-
-        cat > pubspec.yaml << 'PUBEOF'
-        name: couture_pro
-        description: Création de robe de diplôme sur mesure
-        version: 1.0.0+1
-        publish_to: none
-
-        environment:
-          sdk: '>=3.3.0 <4.0.0'
-
-        dependencies:
-          flutter:
-            sdk: flutter
-
-        flutter:
-          uses-material-design: true
-        PUBEOF
+        DARTEOF
 
         flutter clean
         flutter pub get
         flutter build apk --release
-        cp build/app/outputs/flutter-apk/app-release.apk ../couture-pro.apk
+        cp build/app/outputs/flutter-apk/app-release.apk ../dress-3d.apk
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: couture-graduation-pro
-        path: couture-pro.apk
+        name: dress-3d-designer
+        path: dress-3d.apk
