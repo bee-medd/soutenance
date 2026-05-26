@@ -110,17 +110,17 @@ jobs:
               CategoryPage(onAddCart: (p) => setState(() => cart.add(p))),
             ];
             return Scaffold(
-              body: pages[_index > 3? 4 : _index],
+              body: pages[_index > 3 ? 4 : _index],
               bottomNavigationBar: Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 20, offset: const Offset(0,-4))],
+                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 20, offset: const Offset(0, -4))],
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
                 ),
                 child: ClipRRect(
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
                   child: BottomNavigationBar(
-                    currentIndex: _index > 3? 0 : _index,
+                    currentIndex: _index > 3 ? 0 : _index,
                     onTap: (i) => setState(() => _index = i),
                     type: BottomNavigationBarType.fixed,
                     backgroundColor: Colors.white,
@@ -151,7 +151,7 @@ jobs:
               child: CustomScrollView(
                 slivers: [
                   SliverToBoxAdapter(child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20,16,20,8),
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
                     child: Row(
                       children: [
                         const Icon(Icons.local_pharmacy, color: Color(0xFF2563EB), size: 28),
@@ -159,7 +159,7 @@ jobs:
                         const Text('Pharma', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: Color(0xFF2563EB))),
                         const Text('Mate', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w400, color: Color(0xFF0F172A))),
                         const Spacer(),
-                        IconButton(onPressed: (){}, icon: const Icon(Icons.notifications_none_rounded)),
+                        IconButton(onPressed: () {}, icon: const Icon(Icons.notifications_none_rounded)),
                       ],
                     ),
                   )),
@@ -205,7 +205,7 @@ jobs:
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                       const Text('Categories', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
-                      TextButton(onPressed: (){}, child: const Text('SHOW ALL')),
+                      TextButton(onPressed: () {}, child: const Text('SHOW ALL')),
                     ]),
                   )),
                   SliverToBoxAdapter(child: SizedBox(
@@ -231,14 +231,14 @@ jobs:
                     ),
                   )),
                   SliverToBoxAdapter(child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20,8,20,8),
+                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
                     child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                       const Text('Popular', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
-                      TextButton(onPressed: (){}, child: const Text('SHOW ALL')),
+                      TextButton(onPressed: () {}, child: const Text('SHOW ALL')),
                     ]),
                   )),
                   SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(20,0,20,30),
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 30),
                     sliver: SliverGrid(
                       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, mainAxisSpacing: 16, crossAxisSpacing: 16, childAspectRatio: 0.72),
                       delegate: SliverChildBuilderDelegate((context, i) {
@@ -274,7 +274,7 @@ jobs:
                   Expanded(child: Stack(
                     children: [
                       Center(child: ClipRRect(borderRadius: BorderRadius.circular(12), child: Image.network(p.image, fit: BoxFit.cover))),
-                      Positioned(right: 0, top: 0, child: GestureDetector(onTap: () => setState(() => p.isFav =!p.isFav), child: Icon(p.isFav? Icons.favorite : Icons.favorite_border, color: p.isFav? Colors.red : Colors.grey))),
+                      Positioned(right: 0, top: 0, child: GestureDetector(onTap: () => setState(() => p.isFav = !p.isFav), child: Icon(p.isFav ? Icons.favorite : Icons.favorite_border, color: p.isFav ? Colors.red : Colors.grey))),
                     ],
                   )),
                   const SizedBox(height: 8),
@@ -327,7 +327,22 @@ jobs:
           @override
           Widget build(BuildContext context) {
             final favs = demoProducts.where((p) => p.isFav).toList();
-            return Scaffold(appBar: AppBar(title: const Text('Favoris'), backgroundColor: Colors.transparent), body: ListView.separated(padding: const EdgeInsets.all(20), itemBuilder: (_, i) => ListTile(leading: Image.network(favs[i].image, width: 50), title: Text(favs[i].title), subtitle: Text('\$${favs[i].price}'), trailing: const Icon(Icons.favorite, color: Colors.red)), separatorBuilder: (_, __) => const Divider(), itemCount: favs.length));
+            return Scaffold(
+              appBar: AppBar(title: const Text('Favoris'), backgroundColor: Colors.transparent),
+              body: favs.isEmpty 
+                ? const Center(child: Text('Aucun favoris', style: TextStyle(fontSize: 16, color: Colors.grey)))
+                : ListView.separated(
+                    padding: const EdgeInsets.all(20),
+                    itemBuilder: (_, i) => ListTile(
+                      leading: Image.network(favs[i].image, width: 50),
+                      title: Text(favs[i].title),
+                      subtitle: Text('\$${favs[i].price}'),
+                      trailing: const Icon(Icons.favorite, color: Colors.red),
+                    ),
+                    separatorBuilder: (_, __) => const Divider(),
+                    itemCount: favs.length,
+                  ),
+            );
           }
         }
 
@@ -340,8 +355,29 @@ jobs:
             return Scaffold(
               appBar: AppBar(title: const Text('Panier'), backgroundColor: Colors.transparent),
               body: Column(children: [
-                Expanded(child: ListView.separated(padding: const EdgeInsets.all(20), itemBuilder: (_, i) => ListTile(leading: Image.network(cart[i].image, width: 50), title: Text(cart[i].title), trailing: Text('\$${cart[i].price}')), separatorBuilder: (_, __) => const Divider(), itemCount: cart.length)),
-                Container(padding: const EdgeInsets.all(20), decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(24))), child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text('Total: \$${total.toStringAsFixed(0)}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)), FilledButton(onPressed: (){}, child: const Text('Commander'))])),
+                Expanded(
+                  child: cart.isEmpty
+                    ? const Center(child: Text('Panier vide', style: TextStyle(fontSize: 16, color: Colors.grey)))
+                    : ListView.separated(
+                        padding: const EdgeInsets.all(20),
+                        itemBuilder: (_, i) => ListTile(
+                          leading: Image.network(cart[i].image, width: 50),
+                          title: Text(cart[i].title),
+                          trailing: Text('\$${cart[i].price}'),
+                        ),
+                        separatorBuilder: (_, __) => const Divider(),
+                        itemCount: cart.length,
+                      ),
+                ),
+                if (cart.isNotEmpty)
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+                    child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                      Text('Total: \$${total.toStringAsFixed(0)}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+                      FilledButton(onPressed: () {}, child: const Text('Commander')),
+                    ]),
+                  ),
               ]),
             );
           }
@@ -351,21 +387,38 @@ jobs:
           const ProfilePage({super.key});
           @override
           Widget build(BuildContext context) {
-            return Scaffold(appBar: AppBar(title: const Text('Profil'), backgroundColor: Colors.transparent), body: const Center(child: Text('Amine • PharmaMate Pro', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600))));
+            return Scaffold(
+              appBar: AppBar(title: const Text('Profil'), backgroundColor: Colors.transparent),
+              body: const Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircleAvatar(radius: 50, child: Icon(Icons.person, size: 50)),
+                    SizedBox(height: 16),
+                    Text('Amine Benali', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                    SizedBox(height: 8),
+                    Text('amine@pharmamate.com', style: TextStyle(color: Colors.grey)),
+                  ],
+                ),
+              ),
+            );
           }
         }
         EOF
 
         cat > pubspec.yaml << 'PUBEOF'
         name: pharma_pro
-        description: متجر صيدلية إلكتروني بريميوم
+        description: Application de pharmacie premium
         version: 1.0.0+1
         publish_to: none
+
         environment:
           sdk: '>=3.3.0 <4.0.0'
+
         dependencies:
           flutter:
             sdk: flutter
+
         flutter:
           uses-material-design: true
         PUBEOF
@@ -373,7 +426,7 @@ jobs:
         flutter clean
         flutter pub get
         flutter build apk --release
-        cp build/app/outputs/flutter-apk/app-release.apk../pharma-premium.apk
+        cp build/app/outputs/flutter-apk/app-release.apk ../pharma-premium.apk
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
