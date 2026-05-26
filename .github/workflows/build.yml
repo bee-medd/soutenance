@@ -10,13 +10,35 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.22.0'
           channel: 'stable'
-      - run: flutter pub get
-      - run: flutter build apk --release
+      
+      - name: Create Flutter project
+        run: |
+          # إنشاء مشروع جديد
+          flutter create detox_pro_app --org com.detox.pro
+          cd detox_pro_app
+          
+          # نسخ ملفاتك
+          cp -r ../lib ./
+          cp ../pubspec.yaml .
+          mkdir -p assets/images
+          
+          # تنظيف وإعادة تثبيت
+          flutter clean
+          flutter pub get
+          
+          # بناء APK
+          flutter build apk --release
+          
+          # نقل APK إلى مكان متوقع
+          mkdir -p ../build/app/outputs/flutter-apk/
+          cp build/app/outputs/flutter-apk/app-release.apk ../build/app/outputs/flutter-apk/
+          
       - uses: actions/upload-artifact@v4
         with:
           name: detox-pro-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          path: detox_pro_app/build/app/outputs/flutter-apk/app-release.apk
