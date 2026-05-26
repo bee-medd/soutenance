@@ -1,4 +1,4 @@
-name: Detox Pro - Build APK
+name: Build APK
 
 on:
   push:
@@ -8,280 +8,124 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.22.0'
-          channel: 'stable'
-      
-      - name: Setup Android SDK
-        run: |
-          echo y | sdkmanager "platforms;android-34"
-          echo y | sdkmanager "build-tools;34.0.0"
-      
-      - name: Create Flutter project and build
-        run: |
-          # إنشاء مشروع جديد
-          flutter create --project-name=detox_pro_dz --org=com.detox.pro .
-          
-          # نسخ ملف main.dart
-          mkdir -p lib
-          cat > lib/main.dart << 'DARTEOF'
-import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:fl_chart/fl_chart.dart';
-
-void main() {
-  runApp(DetoxProApp());
-}
-
-class DetoxProApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Detox Pro - علاج إدمان الإنترنت',
-      theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),
-      home: SplashScreen(),
-      debugShowCheckedModeBanner: false,
-    );
-  }
-}
-
-class SplashScreen extends StatefulWidget {
-  @override
-  _SplashScreenState createState() => _SplashScreenState();
-}
-
-class _SplashScreenState extends State<SplashScreen> {
-  @override
-  void initState() {
-    super.initState();
-    Future.delayed(Duration(seconds: 2), () {
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomeScreen()));
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Colors.blue.shade900, Colors.cyan.shade700])),
-        child: Center(
-          child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-            Icon(Icons.health_and_safety, size: 100, color: Colors.white),
-            SizedBox(height: 20),
-            Text('Detox Pro', style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white)),
-            SizedBox(height: 10),
-            Text('علاج إدمان الإنترنت', style: TextStyle(fontSize: 18, color: Colors.white70)),
-            SizedBox(height: 30),
-            CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
-          ]),
-        ),
-      ),
-    );
-  }
-}
-
-class HomeScreen extends StatefulWidget {
-  @override
-  _HomeScreenState createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  int _selectedIndex = 0;
-  int _screenTimeMinutes = 0;
-  
-  @override
-  void initState() {
-    super.initState();
-    _loadScreenTime();
-  }
-  
-  Future<void> _loadScreenTime() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() => _screenTimeMinutes = prefs.getInt('screenTime') ?? 0);
-  }
-  
-  Future<void> _addScreenTime(int minutes) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() => _screenTimeMinutes += minutes);
-    await prefs.setInt('screenTime', _screenTimeMinutes);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    List<Widget> pages = [
-      DashboardScreen(screenTime: _screenTimeMinutes),
-      StatisticsScreen(),
-      SettingsScreen(addScreenTime: _addScreenTime),
-    ];
     
-    return Scaffold(
-      body: pages[_selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: (index) => setState(() => _selectedIndex = index),
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'الرئيسية'),
-          BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: 'الإحصائيات'),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'الإعدادات'),
-        ],
-      ),
-    );
-  }
-}
-
-class DashboardScreen extends StatelessWidget {
-  final int screenTime;
-  const DashboardScreen({required this.screenTime});
-  
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('لوحة التحكم'), backgroundColor: Colors.blue.shade900, foregroundColor: Colors.white),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Card(
-            elevation: 4,
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(children: [
-                const Text('وقت استخدام الهاتف اليوم', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 10),
-                Text('${screenTime ~/ 60} ساعة ${screenTime % 60} دقيقة', 
-                     style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.blue.shade700)),
-              ]),
-            ),
-          ),
-          const SizedBox(height: 20),
-          const Text('نصائح سريعة', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-          const Card(child: ListTile(leading: Icon(Icons.lightbulb_outline, color: Colors.amber), title: Text('خذ استراحة 5 دقائق كل ساعة'))),
-          const Card(child: ListTile(leading: Icon(Icons.phone_android, color: Colors.green), title: Text('خفض سطوع الشاشة'))),
-        ]),
-      ),
-    );
-  }
-}
-
-class StatisticsScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('الإحصائيات'), backgroundColor: Colors.blue.shade900, foregroundColor: Colors.white),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(children: [
-            const Text('تقدمك في العلاج', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 20),
-            SizedBox(
-              height: 200,
-              child: BarChart(BarChartData(
-                alignment: BarChartAlignment.spaceAround,
-                maxY: 10,
-                barGroups: [
-                  BarChartGroupData(x: 0, barRods: [BarChartRodData(toY: 8, color: Colors.blue)]),
-                  BarChartGroupData(x: 1, barRods: [BarChartRodData(toY: 6, color: Colors.blue)]),
-                  BarChartGroupData(x: 2, barRods: [BarChartRodData(toY: 7, color: Colors.blue)]),
-                  BarChartGroupData(x: 3, barRods: [BarChartRodData(toY: 5, color: Colors.green)]),
-                ],
-              )),
-            ),
-          ]),
-        ),
-      ),
-    );
-  }
-}
-
-class SettingsScreen extends StatefulWidget {
-  final Function(int) addScreenTime;
-  const SettingsScreen({required this.addScreenTime});
-  
-  @override
-  _SettingsScreenState createState() => _SettingsScreenState();
-}
-
-class _SettingsScreenState extends State<SettingsScreen> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('الإعدادات'), backgroundColor: Colors.blue.shade900, foregroundColor: Colors.white),
-      body: ListView(children: [
-        const SwitchListTile(title: Text('إشعارات يومية'), subtitle: Text('تلقي تذكيرات يومية'), value: true, onChanged: null),
-        ListTile(
-          title: const Text('إضافة وقت استخدام تجريبي'),
-          subtitle: const Text('للاختبار: أضف 30 دقيقة'),
-          trailing: const Icon(Icons.add_circle),
-          onTap: () {
-            widget.addScreenTime(30);
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم إضافة 30 دقيقة للاستخدام')));
-          },
-        ),
-        ListTile(
-          title: const Text('تسجيل الخروج'),
-          trailing: const Icon(Icons.logout),
-          onTap: () {
-            showDialog(
-              context: context,
-              builder: (context) => AlertDialog(
-                title: const Text('تسجيل الخروج'),
-                content: const Text('هل أنت متأكد؟'),
-                actions: [
-                  TextButton(onPressed: () => Navigator.pop(context), child: const Text('إلغاء')),
-                  TextButton(onPressed: () => Navigator.pop(context), child: const Text('تسجيل خروج')),
-                ],
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.22.0'
+        channel: 'stable'
+    
+    - name: Create simple Flutter app
+      run: |
+        # إنشاء تطبيق Flutter جديد
+        flutter create simple_app
+        cd simple_app
+        
+        # إنشاء main.dart بسيط
+        cat > lib/main.dart << 'DARTEOF'
+        import 'package:flutter/material.dart';
+        
+        void main() {
+          runApp(const MyApp());
+        }
+        
+        class MyApp extends StatelessWidget {
+          const MyApp({super.key});
+          
+          @override
+          Widget build(BuildContext context) {
+            return MaterialApp(
+              title: 'Detox Pro',
+              theme: ThemeData(
+                primarySwatch: Colors.blue,
+                useMaterial3: true,
+              ),
+              home: const HomePage(),
+              debugShowCheckedModeBanner: false,
+            );
+          }
+        }
+        
+        class HomePage extends StatelessWidget {
+          const HomePage({super.key});
+          
+          @override
+          Widget build(BuildContext context) {
+            return Scaffold(
+              appBar: AppBar(
+                title: const Text('Detox Pro - علاج إدمان الإنترنت'),
+                backgroundColor: Colors.blue,
+              ),
+              body: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.health_and_safety, size: 80, color: Colors.blue),
+                      const SizedBox(height: 20),
+                      const Text(
+                        'مرحباً بك في تطبيق Detox Pro',
+                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 10),
+                      const Text(
+                        'تطبيق لعلاج إدمان الإنترنت',
+                        style: TextStyle(fontSize: 16),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 30),
+                      ElevatedButton(
+                        onPressed: () {},
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                          padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                        ),
+                        child: const Text(
+                          'ابدأ الآن',
+                          style: TextStyle(fontSize: 18, color: Colors.white),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             );
-          },
-        ),
-      ]),
-    );
-  }
-}
-DARTEOF
-          
-          # إصلاح مشكلة Kotlin
-          cat >> android/app/build.gradle << 'GRADLEEOF'
-configurations.all {
-    resolutionStrategy {
-        force 'org.jetbrains.kotlin:kotlin-stdlib:1.9.0'
-        force 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.0'
-    }
-}
-GRADLEEOF
-          
-          # تحديث pubspec.yaml المبسط بدون workmanager
-          cat > pubspec.yaml << 'PUBEOF'
-name: detox_pro_dz
-description: علاج إدمان الإنترنت - نسخة احترافية
-version: 2.0.0+1
-
-environment:
-  sdk: '>=3.3.0 <4.0.0'
-
-dependencies:
-  flutter:
-    sdk: flutter
-  cupertino_icons: ^1.0.6
-  shared_preferences: ^2.2.2
-  fl_chart: ^0.68.0
-
-flutter:
-  uses-material-design: true
-  assets:
-    - assets/images/
-PUBEOF
-          
-          # تنظيف وبناء
-          flutter clean
-          flutter pub get
-          flutter build apk --release
-          
-      - uses: actions/upload-artifact@v4
-        with:
-          name: detox-pro-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          }
+        }
+        DARTEOF
+        
+        # تحديث pubspec.yaml ليكون بسيطاً
+        cat > pubspec.yaml << 'PUBEOF'
+        name: simple_app
+        description: Detox Pro App
+        version: 1.0.0+1
+        
+        environment:
+          sdk: '>=3.3.0 <4.0.0'
+        
+        dependencies:
+          flutter:
+            sdk: flutter
+        
+        flutter:
+          uses-material-design: true
+        PUBEOF
+        
+        # بناء التطبيق
+        flutter clean
+        flutter pub get
+        flutter build apk --release
+        
+        # نسخ APK إلى مكان يمكن الوصول إليه
+        cp build/app/outputs/flutter-apk/app-release.apk ../detox-pro.apk
+        
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: detox-pro-app
+        path: detox-pro.apk
