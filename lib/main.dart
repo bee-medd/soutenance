@@ -8,9 +8,13 @@ class TogaApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Toga DZ',
-      theme: ThemeData(primarySwatch: Colors.deepPurple, fontFamily: 'Cairo'),
-      home: DesignerScreen(),
       debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        useMaterial3: true,
+        colorSchemeSeed: Colors.deepPurple,
+        fontFamily: 'Roboto',
+      ),
+      home: DesignerScreen(),
     );
   }
 }
