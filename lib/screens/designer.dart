@@ -30,7 +30,6 @@ class _DesignerScreenState extends State<DesignerScreen> {
       ),
       body: Column(
         children: [
-          // Viewer 3D
           Container(
             height: MediaQuery.of(context).size.height * 0.48,
             margin: EdgeInsets.all(16),
@@ -46,13 +45,11 @@ class _DesignerScreenState extends State<DesignerScreen> {
                 alt: "Toge de graduation",
                 autoRotate: true,
                 cameraControls: true,
-                backgroundColor: "#FFFFFF",
-                loading: Loading.eager,
+                ar: false,
+                backgroundColor: Colors.white,
               ),
             ),
           ),
-
-          // Contrôles
           Expanded(
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 20),
@@ -112,13 +109,9 @@ class _DesignerScreenState extends State<DesignerScreen> {
   }
 
   void saveDesign() {
-    final design = {
-      "stole_color": stoleColor,
-      "name": studentName,
-      "timestamp": DateTime.now().toIso8601String()
-    };
+    final design = {"stole_color": stoleColor, "name": studentName};
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Design enregistré ! $design")),
+      SnackBar(content: Text("Design enregistré !")),
     );
   }
 }
