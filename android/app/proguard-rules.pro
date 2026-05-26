@@ -1,0 +1,4 @@
+-keepattributes *Annotation*,Signature,InnerClasses,EnclosingMethod
+-keepclassmembers class * { @android.webkit.JavascriptInterface <methods>; }
+-keep class android.webkit.** { *; }
+-keep class com.example.toga_dz.** { *; }
