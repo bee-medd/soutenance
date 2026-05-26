@@ -1,4 +1,4 @@
-name: Build Premium Pinterest UI
+name: Build Stable APK
 
 on:
   push:
@@ -12,47 +12,43 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Setup Flutter
-      uses: subosito/flutter-action@v2
+    - uses: subosito/flutter-action@v2
       with:
         flutter-version: '3.22.0'
         channel: 'stable'
 
-    - name: Create App
+    - name: Create Flutter App
       run: |
-        flutter create detox_pinterest
-        cd detox_pinterest
+        flutter create detox_app
+        cd detox_app
 
         cat > lib/main.dart << 'DARTEOF'
         import 'package:flutter/material.dart';
-        import 'package:flutter/rendering.dart';
 
-        void main() => runApp(const PremiumApp());
+        void main() => runApp(const DetoxApp());
 
-        class PremiumApp extends StatelessWidget {
-          const PremiumApp({super.key});
+        class DetoxApp extends StatelessWidget {
+          const DetoxApp({super.key});
 
           @override
           Widget build(BuildContext context) {
             return MaterialApp(
-              title: 'Détox Pinterest',
-              debugShowCheckedModeBanner: false,
+              title: 'Détox Premium',
               theme: ThemeData(
-                brightness: Brightness.light,
                 scaffoldBackgroundColor: Colors.white,
                 cardTheme: CardTheme(
                   elevation: 0,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                  clipBehavior: Clip.antiAlias,
                 ),
                 appBarTheme: const AppBarTheme(
                   backgroundColor: Colors.white,
-                  foregroundColor: Colors.black87,
+                  foregroundColor: Colors.black,
                   elevation: 0,
-                  titleTextStyle: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black87),
+                  centerTitle: false,
                 ),
                 useMaterial3: true,
               ),
+              debugShowCheckedModeBanner: false,
               home: const HomePage(),
             );
           }
@@ -61,22 +57,58 @@ jobs:
         class HomePage extends StatelessWidget {
           const HomePage({super.key});
 
+          final List<Map<String, dynamic>> items = const [
+            {'title': 'Méditation', 'sub': '5 min', 'color': 0xFFF5E6D3},
+            {'title': 'Défi sans écran', 'sub': '2h offline', 'color': 0xFFE8F0FE},
+            {'title': 'Journaling', 'sub': 'Exprimer', 'color': 0xFFE6F7F0},
+            {'title': 'Marche', 'sub': 'Reconnexion', 'color': 0xFFFEF3E8},
+            {'title': 'Respiration', 'sub': 'Anti-stress', 'color': 0xFFEDE7F6},
+            {'title': 'Lecture', 'sub': 'Papier', 'color': 0xFFFFF5E0},
+            {'title': 'Créativité', 'sub': 'Dessin', 'color': 0xFFE3F2FD},
+            {'title': 'Sport', 'sub': '15 min', 'color': 0xFFFCE4EC},
+            {'title': 'Cuisine', 'sub': 'Sans distraction', 'color': 0xFFF1F8E9},
+            {'title': 'Sommeil', 'sub': 'Rituel', 'color': 0xFFF3E5F5},
+          ];
+
           @override
           Widget build(BuildContext context) {
             return Scaffold(
               appBar: AppBar(
-                title: const Text('Détox\nPremium'),
+                title: const Text('Détox\nPremium', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
                 actions: [
                   IconButton(onPressed: () {}, icon: const Icon(Icons.search)),
-                  const CircleAvatar(backgroundColor: Colors.grey, child: Icon(Icons.person, color: Colors.white)),
+                  const CircleAvatar(child: Icon(Icons.person)),
                 ],
               ),
-              body: const CustomScrollView(
+              body: CustomScrollView(
                 slivers: [
-                  SliverToBoxAdapter(child: _Header()),
+                  const SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Inspiration bien-être', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+                          SizedBox(height: 5),
+                          Text('Réduisez votre temps d\'écran', style: TextStyle(fontSize: 15, color: Colors.grey)),
+                        ],
+                      ),
+                    ),
+                  ),
                   SliverPadding(
-                    padding: EdgeInsets.all(12),
-                    sliver: _WaterfallGrid(),
+                    padding: const EdgeInsets.all(12),
+                    sliver: SliverGrid(
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 12,
+                        mainAxisSpacing: 12,
+                        childAspectRatio: 0.75,
+                      ),
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) => _PremiumCard(item: items[index % items.length]),
+                        childCount: 20,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -84,115 +116,9 @@ jobs:
           }
         }
 
-        class _Header extends StatelessWidget {
-          const _Header();
-
-          @override
-          Widget build(BuildContext context) {
-            return Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Inspiration bien-être', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.grey.shade800)),
-                  const SizedBox(height: 5),
-                  Text('Réduisez votre temps d\'écran avec style', style: TextStyle(fontSize: 15, color: Colors.grey.shade600)),
-                ],
-              ),
-            );
-          }
-        }
-
-        class _WaterfallGrid extends StatelessWidget {
-          const _WaterfallGrid();
-
-          final int itemCount = 12;
-
-          @override
-          Widget build(BuildContext context) {
-            return SliverGrid(
-              gridDelegate: SliverWaterfallDelegate(crossAxisCount: 2, crossAxisSpacing: 12, mainAxisSpacing: 16),
-              delegate: SliverChildBuilderDelegate(
-                (context, index) => _PremiumCard(index: index),
-                childCount: itemCount,
-              ),
-            );
-          }
-        }
-
-        class SliverWaterfallDelegate extends SliverGridDelegate {
-          final int crossAxisCount;
-          final double crossAxisSpacing;
-          final double mainAxisSpacing;
-
-          const SliverWaterfallDelegate({
-            required this.crossAxisCount,
-            this.crossAxisSpacing = 0,
-            this.mainAxisSpacing = 0,
-          });
-
-          @override
-          SliverGridLayout getLayout(SliverConstraints constraints) {
-            final double crossAxisExtent = (constraints.crossAxisExtent - (crossAxisCount - 1) * crossAxisSpacing) / crossAxisCount;
-            return _WaterfallLayout(
-              crossAxisCount: crossAxisCount,
-              crossAxisSpacing: crossAxisSpacing,
-              mainAxisSpacing: mainAxisSpacing,
-              crossAxisExtent: crossAxisExtent,
-            );
-          }
-
-          @override
-          bool shouldRelayout(covariant SliverWaterfallDelegate oldDelegate) {
-            return crossAxisCount != oldDelegate.crossAxisCount ||
-                crossAxisSpacing != oldDelegate.crossAxisSpacing ||
-                mainAxisSpacing != oldDelegate.mainAxisSpacing;
-          }
-        }
-
-        class _WaterfallLayout extends SliverGridLayout {
-          final int crossAxisCount;
-          final double crossAxisSpacing;
-          final double mainAxisSpacing;
-          final double crossAxisExtent;
-
-          _WaterfallLayout({
-            required this.crossAxisCount,
-            required this.crossAxisSpacing,
-            required this.mainAxisSpacing,
-            required this.crossAxisExtent,
-          });
-
-          @override
-          SliverGridGeometry getGeometryForChildIndex(int index) {
-            final double baseHeight = 160 + ((index % 5) * 28);
-            final double mainAxisStride = baseHeight + mainAxisSpacing;
-            final int row = index ~/ crossAxisCount;
-            final int col = index % crossAxisCount;
-            final double crossAxisStart = col * (crossAxisExtent + crossAxisSpacing);
-            return SliverGridGeometry(
-              scrollOffset: row * mainAxisStride,
-              crossAxisOffset: crossAxisStart,
-              mainAxisExtent: baseHeight,
-              crossAxisExtent: crossAxisExtent,
-            );
-          }
-
-          @override
-          double computeMaxScrollOffset(int childCount) {
-            if (childCount == 0) return 0;
-            final int rows = (childCount + crossAxisCount - 1) ~/ crossAxisCount;
-            double total = 0;
-            for (int i = 0; i < rows; i++) {
-              total += 160 + (i % 5) * 28 + mainAxisSpacing;
-            }
-            return total;
-          }
-        }
-
         class _PremiumCard extends StatefulWidget {
-          final int index;
-          const _PremiumCard({required this.index});
+          final Map<String, dynamic> item;
+          const _PremiumCard({required this.item});
 
           @override
           State<_PremiumCard> createState() => _PremiumCardState();
@@ -205,8 +131,8 @@ jobs:
           @override
           void initState() {
             super.initState();
-            _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 120));
-            _scale = Tween<double>(begin: 1.0, end: 0.96).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
+            _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 100));
+            _scale = Tween<double>(begin: 1.0, end: 0.97).animate(_controller);
           }
 
           void _onTapDown(_) => _controller.forward();
@@ -214,12 +140,13 @@ jobs:
           void _onTapCancel() => _controller.reverse();
 
           @override
-          Widget build(BuildContext context) {
-            final titles = ['Méditation 5min', 'Défi sans écran', 'Journaling', 'Marche consciente', 'Respiration', 'Lecture', 'Créativité', 'Sport', 'Cuisine', 'Sommeil', 'Apprentissage', 'Appel'];
-            final subtitles = ['Calme mental', '2h offline', 'Exprimez-vous', 'Reconnexion', 'Anti-stress', 'Détox', 'Dessin/écriture', '15 min', 'Sans distraction', 'Rituel', 'Cours court', 'Véritable lien'];
-            final colors = [0xFFF5E6D3, 0xFFE8F0FE, 0xFFE6F7F0, 0xFFFEF3E8, 0xFFEDE7F6, 0xFFFFF5E0, 0xFFE3F2FD, 0xFFFCE4EC, 0xFFF1F8E9, 0xFFF3E5F5, 0xFFE0F7FA, 0xFFFFF8E1];
-            final int i = widget.index % titles.length;
+          void dispose() {
+            _controller.dispose();
+            super.dispose();
+          }
 
+          @override
+          Widget build(BuildContext context) {
             return GestureDetector(
               onTapDown: _onTapDown,
               onTapUp: _onTapUp,
@@ -231,25 +158,24 @@ jobs:
                   scale: _scale.value,
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Color(colors[i]),
+                      color: Color(widget.item['color']),
                       borderRadius: BorderRadius.circular(24),
-                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 12, offset: const Offset(0, 4))],
                     ),
-                    padding: const EdgeInsets.all(14),
+                    padding: const EdgeInsets.all(16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         const Spacer(),
-                        Text(titles[i], style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                        const SizedBox(height: 4),
-                        Text(subtitles[i], style: TextStyle(fontSize: 13, color: Colors.grey.shade700)),
+                        Text(widget.item['title'], style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
+                        const SizedBox(height: 5),
+                        Text(widget.item['sub'], style: const TextStyle(fontSize: 14, color: Colors.black54)),
                         const SizedBox(height: 12),
                         Row(
-                          children: [
-                            Icon(Icons.favorite_border, size: 16, color: Colors.grey.shade600),
-                            const SizedBox(width: 10),
-                            Icon(Icons.bookmark_border, size: 16, color: Colors.grey.shade600),
+                          children: const [
+                            Icon(Icons.favorite_border, size: 18),
+                            SizedBox(width: 12),
+                            Icon(Icons.bookmark_border, size: 18),
                           ],
                         ),
                       ],
@@ -259,18 +185,12 @@ jobs:
               ),
             );
           }
-
-          @override
-          void dispose() {
-            _controller.dispose();
-            super.dispose();
-          }
         }
         DARTEOF
 
         cat > pubspec.yaml << 'PUBEOF'
-        name: detox_pinterest
-        description: App inspirée de Pinterest
+        name: detox_app
+        description: App de détox numérique
         version: 1.0.0+1
 
         environment:
@@ -287,11 +207,10 @@ jobs:
         flutter clean
         flutter pub get
         flutter build apk --release
-        cp build/app/outputs/flutter-apk/app-release.apk ../app-release.apk
+        cp build/app/outputs/flutter-apk/app-release.apk ../detox-final.apk
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: detox-premium-apk
-        path: app-release.apk
-EOF
+        name: detox-premium-stable
+        path: detox-final.apk
