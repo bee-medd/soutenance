@@ -1,4 +1,4 @@
-name: Build Premium Pinterest-like UI
+name: Build Premium Pinterest UI
 
 on:
   push:
@@ -18,50 +18,48 @@ jobs:
         flutter-version: '3.22.0'
         channel: 'stable'
 
-    - name: Create High Performance App
+    - name: Create App
       run: |
-        flutter create detox_premium
-        cd detox_premium
+        flutter create detox_pinterest
+        cd detox_pinterest
 
         cat > lib/main.dart << 'DARTEOF'
         import 'package:flutter/material.dart';
         import 'package:flutter/rendering.dart';
 
-        void main() => runApp(const DetoxPremiumApp());
+        void main() => runApp(const PremiumApp());
 
-        class DetoxPremiumApp extends StatelessWidget {
-          const DetoxPremiumApp({super.key});
+        class PremiumApp extends StatelessWidget {
+          const PremiumApp({super.key});
 
           @override
           Widget build(BuildContext context) {
             return MaterialApp(
-              title: 'Détox Premium',
+              title: 'Détox Pinterest',
+              debugShowCheckedModeBanner: false,
               theme: ThemeData(
                 brightness: Brightness.light,
-                primarySwatch: Colors.grey,
                 scaffoldBackgroundColor: Colors.white,
                 cardTheme: CardTheme(
                   elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                   clipBehavior: Clip.antiAlias,
                 ),
                 appBarTheme: const AppBarTheme(
                   backgroundColor: Colors.white,
                   foregroundColor: Colors.black87,
                   elevation: 0,
-                  centerTitle: false,
-                  titleTextStyle: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87),
+                  titleTextStyle: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black87),
                 ),
                 useMaterial3: true,
               ),
-              home: const PremiumHomePage(),
-              debugShowCheckedModeBanner: false,
+              home: const HomePage(),
             );
           }
         }
 
-        class PremiumHomePage extends StatelessWidget {
-          const PremiumHomePage({super.key});
+        class HomePage extends StatelessWidget {
+          const HomePage({super.key});
 
           @override
           Widget build(BuildContext context) {
@@ -69,42 +67,36 @@ jobs:
               appBar: AppBar(
                 title: const Text('Détox\nPremium'),
                 actions: [
-                  IconButton(icon: const Icon(Icons.search), onPressed: () {}),
-                  Padding(
-                    padding: const EdgeInsets.only(right: 12),
-                    child: CircleAvatar(backgroundColor: Colors.grey.shade300, child: const Icon(Icons.person, color: Colors.black54)),
-                  )
+                  IconButton(onPressed: () {}, icon: const Icon(Icons.search)),
+                  const CircleAvatar(backgroundColor: Colors.grey, child: Icon(Icons.person, color: Colors.white)),
                 ],
               ),
               body: const CustomScrollView(
                 slivers: [
-                  SliverToBoxAdapter(child: _HeaderSection()),
-                  SliverPadding(padding: EdgeInsets.symmetric(horizontal: 4), sliver: _WaterfallGrid()),
+                  SliverToBoxAdapter(child: _Header()),
+                  SliverPadding(
+                    padding: EdgeInsets.all(12),
+                    sliver: _WaterfallGrid(),
+                  ),
                 ],
               ),
             );
           }
         }
 
-        class _HeaderSection extends StatelessWidget {
-          const _HeaderSection();
+        class _Header extends StatelessWidget {
+          const _Header();
 
           @override
           Widget build(BuildContext context) {
             return Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Inspiration bien-être',
-                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.grey.shade800),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Découvrez des idées pour réduire votre temps d\'écran',
-                    style: TextStyle(fontSize: 15, color: Colors.grey.shade600),
-                  ),
+                  Text('Inspiration bien-être', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.grey.shade800)),
+                  const SizedBox(height: 5),
+                  Text('Réduisez votre temps d\'écran avec style', style: TextStyle(fontSize: 15, color: Colors.grey.shade600)),
                 ],
               ),
             );
@@ -114,17 +106,15 @@ jobs:
         class _WaterfallGrid extends StatelessWidget {
           const _WaterfallGrid();
 
+          final int itemCount = 12;
+
           @override
           Widget build(BuildContext context) {
             return SliverGrid(
-              gridDelegate: SliverWaterfallDelegate(
-                crossAxisCount: 2,
-                crossAxisSpacing: 8,
-                mainAxisSpacing: 12,
-              ),
+              gridDelegate: SliverWaterfallDelegate(crossAxisCount: 2, crossAxisSpacing: 12, mainAxisSpacing: 16),
               delegate: SliverChildBuilderDelegate(
                 (context, index) => _PremiumCard(index: index),
-                childCount: 12,
+                childCount: itemCount,
               ),
             );
           }
@@ -144,7 +134,7 @@ jobs:
           @override
           SliverGridLayout getLayout(SliverConstraints constraints) {
             final double crossAxisExtent = (constraints.crossAxisExtent - (crossAxisCount - 1) * crossAxisSpacing) / crossAxisCount;
-            return SliverWaterfallLayout(
+            return _WaterfallLayout(
               crossAxisCount: crossAxisCount,
               crossAxisSpacing: crossAxisSpacing,
               mainAxisSpacing: mainAxisSpacing,
@@ -160,13 +150,13 @@ jobs:
           }
         }
 
-        class SliverWaterfallLayout extends SliverGridLayout {
+        class _WaterfallLayout extends SliverGridLayout {
           final int crossAxisCount;
           final double crossAxisSpacing;
           final double mainAxisSpacing;
           final double crossAxisExtent;
 
-          SliverWaterfallLayout({
+          _WaterfallLayout({
             required this.crossAxisCount,
             required this.crossAxisSpacing,
             required this.mainAxisSpacing,
@@ -175,8 +165,7 @@ jobs:
 
           @override
           SliverGridGeometry getGeometryForChildIndex(int index) {
-            // Simule différentes hauteurs pour l'effet Pinterest
-            final double baseHeight = 180 + (index % 5) * 32;
+            final double baseHeight = 160 + ((index % 5) * 28);
             final double mainAxisStride = baseHeight + mainAxisSpacing;
             final int row = index ~/ crossAxisCount;
             final int col = index % crossAxisCount;
@@ -195,7 +184,7 @@ jobs:
             final int rows = (childCount + crossAxisCount - 1) ~/ crossAxisCount;
             double total = 0;
             for (int i = 0; i < rows; i++) {
-              total += 180 + (i % 5) * 32 + mainAxisSpacing;
+              total += 160 + (i % 5) * 28 + mainAxisSpacing;
             }
             return total;
           }
@@ -217,31 +206,20 @@ jobs:
           void initState() {
             super.initState();
             _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 120));
-            _scale = Tween<double>(begin: 1, end: 0.97).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
+            _scale = Tween<double>(begin: 1.0, end: 0.96).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
           }
 
-          void _onTapDown(TapDownDetails details) => _controller.forward();
-          void _onTapUp(TapUpDetails details) => _controller.reverse();
+          void _onTapDown(_) => _controller.forward();
+          void _onTapUp(_) => _controller.reverse();
           void _onTapCancel() => _controller.reverse();
 
           @override
           Widget build(BuildContext context) {
-            final List<Map<String, dynamic>> items = const [
-              {'title': 'Méditation 5 min', 'sub': 'Calme mental', 'color': 0xFFF5E6D3},
-              {'title': 'Défi sans écran', 'sub': '2h sans téléphone', 'color': 0xFFE8F0FE},
-              {'title': 'Journaling', 'sub': 'Exprimez vos idées', 'color': 0xFFE6F7F0},
-              {'title': 'Marche consciente', 'sub': 'Reconnectez-vous', 'color': 0xFFFEF3E8},
-              {'title': 'Respiration 4-7-8', 'sub': 'Anti-stress', 'color': 0xFFEDE7F6},
-              {'title': 'Lecture papier', 'sub': 'Détox numérique', 'color': 0xFFFFF5E0},
-              {'title': 'Créativité', 'sub': 'Dessin / Écriture', 'color': 0xFFE3F2FD},
-              {'title': 'Sport maison', 'sub': '15 min', 'color': 0xFFFCE4EC},
-              {'title': 'Cuisine saine', 'sub': 'Sans distraction', 'color': 0xFFF1F8E9},
-              {'title': 'Sommeil réparateur', 'sub': 'Rituel du soir', 'color': 0xFFF3E5F5},
-              {'title': 'Apprendre en ligne', 'sub': 'Cours court', 'color': 0xFFE0F7FA},
-              {'title': 'Appel à un proche', 'sub': 'Véritable connexion', 'color': 0xFFFFF8E1},
-            ];
+            final titles = ['Méditation 5min', 'Défi sans écran', 'Journaling', 'Marche consciente', 'Respiration', 'Lecture', 'Créativité', 'Sport', 'Cuisine', 'Sommeil', 'Apprentissage', 'Appel'];
+            final subtitles = ['Calme mental', '2h offline', 'Exprimez-vous', 'Reconnexion', 'Anti-stress', 'Détox', 'Dessin/écriture', '15 min', 'Sans distraction', 'Rituel', 'Cours court', 'Véritable lien'];
+            final colors = [0xFFF5E6D3, 0xFFE8F0FE, 0xFFE6F7F0, 0xFFFEF3E8, 0xFFEDE7F6, 0xFFFFF5E0, 0xFFE3F2FD, 0xFFFCE4EC, 0xFFF1F8E9, 0xFFF3E5F5, 0xFFE0F7FA, 0xFFFFF8E1];
+            final int i = widget.index % titles.length;
 
-            final item = items[widget.index % items.length];
             return GestureDetector(
               onTapDown: _onTapDown,
               onTapUp: _onTapUp,
@@ -253,32 +231,28 @@ jobs:
                   scale: _scale.value,
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Color(item['color']),
+                      color: Color(colors[i]),
                       borderRadius: BorderRadius.circular(24),
-                      boxShadow: [
-                        BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 12, offset: const Offset(0, 4)),
-                      ],
+                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 12, offset: const Offset(0, 4))],
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(14),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          const Spacer(),
-                          Text(item['title'], style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black87)),
-                          const SizedBox(height: 4),
-                          Text(item['sub'], style: TextStyle(fontSize: 13, color: Colors.grey.shade700)),
-                          const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              Icon(Icons.favorite_border, size: 16, color: Colors.grey.shade600),
-                              const SizedBox(width: 8),
-                              Icon(Icons.bookmark_border, size: 16, color: Colors.grey.shade600),
-                            ],
-                          ),
-                        ],
-                      ),
+                    padding: const EdgeInsets.all(14),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        const Spacer(),
+                        Text(titles[i], style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                        const SizedBox(height: 4),
+                        Text(subtitles[i], style: TextStyle(fontSize: 13, color: Colors.grey.shade700)),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Icon(Icons.favorite_border, size: 16, color: Colors.grey.shade600),
+                            const SizedBox(width: 10),
+                            Icon(Icons.bookmark_border, size: 16, color: Colors.grey.shade600),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -295,8 +269,8 @@ jobs:
         DARTEOF
 
         cat > pubspec.yaml << 'PUBEOF'
-        name: detox_premium
-        description: Application haut de gamme type Pinterest
+        name: detox_pinterest
+        description: App inspirée de Pinterest
         version: 1.0.0+1
 
         environment:
@@ -313,11 +287,11 @@ jobs:
         flutter clean
         flutter pub get
         flutter build apk --release
-        cp build/app/outputs/flutter-apk/app-release.apk ../detox-premium.apk
+        cp build/app/outputs/flutter-apk/app-release.apk ../app-release.apk
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: detox-premium-pinterest-like
-        path: detox-premium.apk
+        name: detox-premium-apk
+        path: app-release.apk
 EOF
