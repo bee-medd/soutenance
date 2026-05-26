@@ -8,7 +8,6 @@ on:
 jobs:
   build-flutter:
     runs-on: ubuntu-latest
-    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -27,7 +26,7 @@ jobs:
 
       - name: Restore our code
         run: |
-          git checkout HEAD -- lib/ pubspec.yaml assets/
+          git checkout HEAD -- lib/ pubspec.yaml
 
       - name: Get dependencies
         run: flutter pub get
