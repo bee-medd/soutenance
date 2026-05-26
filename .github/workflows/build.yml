@@ -1,4 +1,4 @@
-name: Build APK
+name: Build Premium Pinterest-like UI
 
 on:
   push:
@@ -8,547 +8,316 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Setup Flutter
       uses: subosito/flutter-action@v2
       with:
         flutter-version: '3.22.0'
         channel: 'stable'
-    
-    - name: Create Professional App
+
+    - name: Create High Performance App
       run: |
-        flutter create detox_pro
-        cd detox_pro
-        
+        flutter create detox_premium
+        cd detox_premium
+
         cat > lib/main.dart << 'DARTEOF'
         import 'package:flutter/material.dart';
-        
-        void main() {
-          runApp(const DetoxProApp());
-        }
-        
-        class DetoxProApp extends StatelessWidget {
-          const DetoxProApp({super.key});
-        
+        import 'package:flutter/rendering.dart';
+
+        void main() => runApp(const DetoxPremiumApp());
+
+        class DetoxPremiumApp extends StatelessWidget {
+          const DetoxPremiumApp({super.key});
+
           @override
           Widget build(BuildContext context) {
             return MaterialApp(
-              title: 'Détox Pro',
+              title: 'Détox Premium',
               theme: ThemeData(
-                primaryColor: const Color(0xFF1A237E),
-                colorScheme: const ColorScheme.dark(
-                  primary: Color(0xFF1A237E),
-                  secondary: Color(0xFF00BCD4),
+                brightness: Brightness.light,
+                primarySwatch: Colors.grey,
+                scaffoldBackgroundColor: Colors.white,
+                cardTheme: CardTheme(
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                  clipBehavior: Clip.antiAlias,
+                ),
+                appBarTheme: const AppBarTheme(
+                  backgroundColor: Colors.white,
+                  foregroundColor: Colors.black87,
+                  elevation: 0,
+                  centerTitle: false,
+                  titleTextStyle: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87),
                 ),
                 useMaterial3: true,
-                fontFamily: 'Poppins',
               ),
-              home: const SplashScreen(),
+              home: const PremiumHomePage(),
               debugShowCheckedModeBanner: false,
             );
           }
         }
-        
-        class SplashScreen extends StatefulWidget {
-          const SplashScreen({super.key});
-        
+
+        class PremiumHomePage extends StatelessWidget {
+          const PremiumHomePage({super.key});
+
           @override
-          State<SplashScreen> createState() => _SplashScreenState();
+          Widget build(BuildContext context) {
+            return Scaffold(
+              appBar: AppBar(
+                title: const Text('Détox\nPremium'),
+                actions: [
+                  IconButton(icon: const Icon(Icons.search), onPressed: () {}),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 12),
+                    child: CircleAvatar(backgroundColor: Colors.grey.shade300, child: const Icon(Icons.person, color: Colors.black54)),
+                  )
+                ],
+              ),
+              body: const CustomScrollView(
+                slivers: [
+                  SliverToBoxAdapter(child: _HeaderSection()),
+                  SliverPadding(padding: EdgeInsets.symmetric(horizontal: 4), sliver: _WaterfallGrid()),
+                ],
+              ),
+            );
+          }
         }
-        
-        class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
+
+        class _HeaderSection extends StatelessWidget {
+          const _HeaderSection();
+
+          @override
+          Widget build(BuildContext context) {
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Inspiration bien-être',
+                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.grey.shade800),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Découvrez des idées pour réduire votre temps d\'écran',
+                    style: TextStyle(fontSize: 15, color: Colors.grey.shade600),
+                  ),
+                ],
+              ),
+            );
+          }
+        }
+
+        class _WaterfallGrid extends StatelessWidget {
+          const _WaterfallGrid();
+
+          @override
+          Widget build(BuildContext context) {
+            return SliverGrid(
+              gridDelegate: SliverWaterfallDelegate(
+                crossAxisCount: 2,
+                crossAxisSpacing: 8,
+                mainAxisSpacing: 12,
+              ),
+              delegate: SliverChildBuilderDelegate(
+                (context, index) => _PremiumCard(index: index),
+                childCount: 12,
+              ),
+            );
+          }
+        }
+
+        class SliverWaterfallDelegate extends SliverGridDelegate {
+          final int crossAxisCount;
+          final double crossAxisSpacing;
+          final double mainAxisSpacing;
+
+          const SliverWaterfallDelegate({
+            required this.crossAxisCount,
+            this.crossAxisSpacing = 0,
+            this.mainAxisSpacing = 0,
+          });
+
+          @override
+          SliverGridLayout getLayout(SliverConstraints constraints) {
+            final double crossAxisExtent = (constraints.crossAxisExtent - (crossAxisCount - 1) * crossAxisSpacing) / crossAxisCount;
+            return SliverWaterfallLayout(
+              crossAxisCount: crossAxisCount,
+              crossAxisSpacing: crossAxisSpacing,
+              mainAxisSpacing: mainAxisSpacing,
+              crossAxisExtent: crossAxisExtent,
+            );
+          }
+
+          @override
+          bool shouldRelayout(covariant SliverWaterfallDelegate oldDelegate) {
+            return crossAxisCount != oldDelegate.crossAxisCount ||
+                crossAxisSpacing != oldDelegate.crossAxisSpacing ||
+                mainAxisSpacing != oldDelegate.mainAxisSpacing;
+          }
+        }
+
+        class SliverWaterfallLayout extends SliverGridLayout {
+          final int crossAxisCount;
+          final double crossAxisSpacing;
+          final double mainAxisSpacing;
+          final double crossAxisExtent;
+
+          SliverWaterfallLayout({
+            required this.crossAxisCount,
+            required this.crossAxisSpacing,
+            required this.mainAxisSpacing,
+            required this.crossAxisExtent,
+          });
+
+          @override
+          SliverGridGeometry getGeometryForChildIndex(int index) {
+            // Simule différentes hauteurs pour l'effet Pinterest
+            final double baseHeight = 180 + (index % 5) * 32;
+            final double mainAxisStride = baseHeight + mainAxisSpacing;
+            final int row = index ~/ crossAxisCount;
+            final int col = index % crossAxisCount;
+            final double crossAxisStart = col * (crossAxisExtent + crossAxisSpacing);
+            return SliverGridGeometry(
+              scrollOffset: row * mainAxisStride,
+              crossAxisOffset: crossAxisStart,
+              mainAxisExtent: baseHeight,
+              crossAxisExtent: crossAxisExtent,
+            );
+          }
+
+          @override
+          double computeMaxScrollOffset(int childCount) {
+            if (childCount == 0) return 0;
+            final int rows = (childCount + crossAxisCount - 1) ~/ crossAxisCount;
+            double total = 0;
+            for (int i = 0; i < rows; i++) {
+              total += 180 + (i % 5) * 32 + mainAxisSpacing;
+            }
+            return total;
+          }
+        }
+
+        class _PremiumCard extends StatefulWidget {
+          final int index;
+          const _PremiumCard({required this.index});
+
+          @override
+          State<_PremiumCard> createState() => _PremiumCardState();
+        }
+
+        class _PremiumCardState extends State<_PremiumCard> with SingleTickerProviderStateMixin {
           late AnimationController _controller;
-          late Animation<double> _fadeAnimation;
-        
+          late Animation<double> _scale;
+
           @override
           void initState() {
             super.initState();
-            _controller = AnimationController(
-              duration: const Duration(seconds: 2),
-              vsync: this,
-            );
-            _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(_controller);
-            _controller.forward();
-            
-            Future.delayed(const Duration(seconds: 3), () {
-              Navigator.pushReplacement(
-                context,
-                PageRouteBuilder(
-                  pageBuilder: (_, __, ___) => const HomePage(),
-                  transitionsBuilder: (_, animation, __, child) {
-                    return FadeTransition(opacity: animation, child: child);
-                  },
-                ),
-              );
-            });
+            _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 120));
+            _scale = Tween<double>(begin: 1, end: 0.97).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
           }
-        
+
+          void _onTapDown(TapDownDetails details) => _controller.forward();
+          void _onTapUp(TapUpDetails details) => _controller.reverse();
+          void _onTapCancel() => _controller.reverse();
+
+          @override
+          Widget build(BuildContext context) {
+            final List<Map<String, dynamic>> items = const [
+              {'title': 'Méditation 5 min', 'sub': 'Calme mental', 'color': 0xFFF5E6D3},
+              {'title': 'Défi sans écran', 'sub': '2h sans téléphone', 'color': 0xFFE8F0FE},
+              {'title': 'Journaling', 'sub': 'Exprimez vos idées', 'color': 0xFFE6F7F0},
+              {'title': 'Marche consciente', 'sub': 'Reconnectez-vous', 'color': 0xFFFEF3E8},
+              {'title': 'Respiration 4-7-8', 'sub': 'Anti-stress', 'color': 0xFFEDE7F6},
+              {'title': 'Lecture papier', 'sub': 'Détox numérique', 'color': 0xFFFFF5E0},
+              {'title': 'Créativité', 'sub': 'Dessin / Écriture', 'color': 0xFFE3F2FD},
+              {'title': 'Sport maison', 'sub': '15 min', 'color': 0xFFFCE4EC},
+              {'title': 'Cuisine saine', 'sub': 'Sans distraction', 'color': 0xFFF1F8E9},
+              {'title': 'Sommeil réparateur', 'sub': 'Rituel du soir', 'color': 0xFFF3E5F5},
+              {'title': 'Apprendre en ligne', 'sub': 'Cours court', 'color': 0xFFE0F7FA},
+              {'title': 'Appel à un proche', 'sub': 'Véritable connexion', 'color': 0xFFFFF8E1},
+            ];
+
+            final item = items[widget.index % items.length];
+            return GestureDetector(
+              onTapDown: _onTapDown,
+              onTapUp: _onTapUp,
+              onTapCancel: _onTapCancel,
+              onTap: () {},
+              child: AnimatedBuilder(
+                animation: _scale,
+                builder: (context, child) => Transform.scale(
+                  scale: _scale.value,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Color(item['color']),
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 12, offset: const Offset(0, 4)),
+                      ],
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(14),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          const Spacer(),
+                          Text(item['title'], style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black87)),
+                          const SizedBox(height: 4),
+                          Text(item['sub'], style: TextStyle(fontSize: 13, color: Colors.grey.shade700)),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Icon(Icons.favorite_border, size: 16, color: Colors.grey.shade600),
+                              const SizedBox(width: 8),
+                              Icon(Icons.bookmark_border, size: 16, color: Colors.grey.shade600),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }
+
           @override
           void dispose() {
             _controller.dispose();
             super.dispose();
           }
-        
-          @override
-          Widget build(BuildContext context) {
-            return Scaffold(
-              body: Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Color(0xFF1A237E),
-                      Color(0xFF00BCD4),
-                    ],
-                  ),
-                ),
-                child: Center(
-                  child: FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 3),
-                          ),
-                          child: const Icon(
-                            Icons.health_and_safety,
-                            size: 80,
-                            color: Colors.white,
-                          ),
-                        ),
-                        const SizedBox(height: 30),
-                        const Text(
-                          'DÉTOX PRO',
-                          style: TextStyle(
-                            fontSize: 32,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            letterSpacing: 2,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        const Text(
-                          'Réinitialisez votre vie numérique',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.white70,
-                          ),
-                        ),
-                        const SizedBox(height: 40),
-                        const CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            );
-          }
-        }
-        
-        class HomePage extends StatefulWidget {
-          const HomePage({super.key});
-        
-          @override
-          State<HomePage> createState() => _HomePageState();
-        }
-        
-        class _HomePageState extends State<HomePage> {
-          int _selectedIndex = 0;
-        
-          final List<Widget> _pages = [
-            const DashboardPage(),
-            const StatisticsPage(),
-            const ProfilePage(),
-          ];
-        
-          @override
-          Widget build(BuildContext context) {
-            return Scaffold(
-              body: _pages[_selectedIndex],
-              bottomNavigationBar: Container(
-                decoration: BoxDecoration(
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 10,
-                    ),
-                  ],
-                ),
-                child: BottomNavigationBar(
-                  currentIndex: _selectedIndex,
-                  onTap: (index) => setState(() => _selectedIndex = index),
-                  backgroundColor: const Color(0xFF1A237E),
-                  selectedItemColor: const Color(0xFF00BCD4),
-                  unselectedItemColor: Colors.grey,
-                  type: BottomNavigationBarType.fixed,
-                  elevation: 0,
-                  items: const [
-                    BottomNavigationBarItem(
-                      icon: Icon(Icons.dashboard),
-                      label: 'Tableau de bord',
-                    ),
-                    BottomNavigationBarItem(
-                      icon: Icon(Icons.bar_chart),
-                      label: 'Statistiques',
-                    ),
-                    BottomNavigationBarItem(
-                      icon: Icon(Icons.person),
-                      label: 'Profil',
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }
-        }
-        
-        class DashboardPage extends StatelessWidget {
-          const DashboardPage({super.key});
-        
-          @override
-          Widget build(BuildContext context) {
-            return Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Color(0xFF1A237E),
-                    Color(0xFF0D47A1),
-                  ],
-                ),
-              ),
-              child: SafeArea(
-                child: CustomScrollView(
-                  slivers: [
-                    SliverAppBar(
-                      expandedHeight: 200,
-                      floating: true,
-                      backgroundColor: Colors.transparent,
-                      flexibleSpace: FlexibleSpaceBar(
-                        title: const Text(
-                          'Bonjour, Amine',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                        background: Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [
-                                const Color(0xFF1A237E),
-                                const Color(0xFF00BCD4).withOpacity(0.3),
-                              ],
-                            ),
-                          ),
-                          child: const Center(
-                            child: Icon(
-                              Icons.waving_hand,
-                              size: 60,
-                              color: Colors.white70,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    SliverPadding(
-                      padding: const EdgeInsets.all(16),
-                      sliver: SliverList(
-                        delegate: SliverChildListDelegate([
-                          _buildStatCard(
-                            'Temps d\'écran aujourd\'hui',
-                            '4h 32min',
-                            Icons.phone_android,
-                            const Color(0xFF00BCD4),
-                          ),
-                          const SizedBox(height: 16),
-                          _buildStatCard(
-                            'Applications les plus utilisées',
-                            '8 applications',
-                            Icons.apps,
-                            const Color(0xFFFF5722),
-                          ),
-                          const SizedBox(height: 16),
-                          _buildStatCard(
-                            'Objectif quotidien',
-                            '6 heures',
-                            Icons.flag,
-                            const Color(0xFF4CAF50),
-                          ),
-                          const SizedBox(height: 24),
-                          _buildMotivationCard(),
-                        ]),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }
-        
-          Widget _buildStatCard(String title, String value, IconData icon, Color color) {
-            return Card(
-              elevation: 8,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Colors.white.withOpacity(0.1),
-                      Colors.white.withOpacity(0.05),
-                    ],
-                  ),
-                ),
-                child: ListTile(
-                  contentPadding: const EdgeInsets.all(20),
-                  leading: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: color.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    child: Icon(icon, color: color, size: 30),
-                  ),
-                  title: Text(
-                    title,
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 14,
-                    ),
-                  ),
-                  subtitle: Text(
-                    value,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-            );
-          }
-        
-          Widget _buildMotivationCard() {
-            return Card(
-              elevation: 8,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-              child: Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Color(0xFF00BCD4),
-                      Color(0xFF1A237E),
-                    ],
-                  ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Row(
-                      children: [
-                        Icon(Icons.emoji_emotions, color: Colors.white),
-                        SizedBox(width: 10),
-                        Text(
-                          'Citation du jour',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    const Text(
-                      '"La meilleure façon de prédire votre avenir est de le créer."',
-                      style: TextStyle(color: Colors.white70, fontSize: 14, fontStyle: FontStyle.italic),
-                    ),
-                    const SizedBox(height: 10),
-                    Align(
-                      alignment: Alignment.bottomRight,
-                      child: Text(
-                        '- Abraham Lincoln',
-                        style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }
-        }
-        
-        class StatisticsPage extends StatelessWidget {
-          const StatisticsPage({super.key});
-        
-          @override
-          Widget build(BuildContext context) {
-            return Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Color(0xFF1A237E),
-                    Color(0xFF0D47A1),
-                  ],
-                ),
-              ),
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.show_chart,
-                      size: 80,
-                      color: Color(0xFF00BCD4),
-                    ),
-                    const SizedBox(height: 20),
-                    Text(
-                      'Statistiques détaillées',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white.withOpacity(0.8),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      'Bientôt disponible...',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.white.withOpacity(0.5),
-                      ),
-                    ),
-                    const SizedBox(height: 30),
-                    LinearProgressIndicator(
-                      value: 0.6,
-                      backgroundColor: Colors.white.withOpacity(0.1),
-                      valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF00BCD4)),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }
-        }
-        
-        class ProfilePage extends StatelessWidget {
-          const ProfilePage({super.key});
-        
-          @override
-          Widget build(BuildContext context) {
-            return Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Color(0xFF1A237E),
-                    Color(0xFF0D47A1),
-                  ],
-                ),
-              ),
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(30),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: const Color(0xFF00BCD4), width: 3),
-                      ),
-                      child: const Icon(
-                        Icons.person,
-                        size: 80,
-                        color: Color(0xFF00BCD4),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    Text(
-                      'Amine Benali',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white.withOpacity(0.8),
-                      ),
-                    ),
-                    const SizedBox(height: 5),
-                    Text(
-                      'amine@detoxpro.com',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.white.withOpacity(0.5),
-                      ),
-                    ),
-                    const SizedBox(height: 30),
-                    ElevatedButton.icon(
-                      onPressed: () {},
-                      icon: const Icon(Icons.settings),
-                      label: const Text('Paramètres'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF00BCD4),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }
         }
         DARTEOF
-        
+
         cat > pubspec.yaml << 'PUBEOF'
-        name: detox_pro
-        description: Application de détox numérique professionnelle
+        name: detox_premium
+        description: Application haut de gamme type Pinterest
         version: 1.0.0+1
-        
+
         environment:
           sdk: '>=3.3.0 <4.0.0'
-        
+
         dependencies:
           flutter:
             sdk: flutter
-        
+
         flutter:
           uses-material-design: true
         PUBEOF
-        
+
         flutter clean
         flutter pub get
         flutter build apk --release
-        cp build/app/outputs/flutter-apk/app-release.apk ../detox-pro.apk
-        
+        cp build/app/outputs/flutter-apk/app-release.apk ../detox-premium.apk
+
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: detox-pro-french-app
-        path: detox-pro.apk
+        name: detox-premium-pinterest-like
+        path: detox-premium.apk
+EOF
