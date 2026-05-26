@@ -1,18 +1,14 @@
 name: toga_dz
-description: "Toga DZ - Concepteur 3D"
-publish_to: 'none'
-version: 1.0.0+3
-
+version: 1.0.0+4
 environment:
   sdk: '>=3.0.0 <4.0.0'
-
 dependencies:
   flutter:
     sdk: flutter
-  cupertino_icons: ^1.0.6
-  flutter_3d_controller: ^1.2.1
-
+  webview_flutter: ^4.7.0
 flutter:
   uses-material-design: true
   assets:
     - assets/models/
+    - assets/web/
+    - assets/web/js/

@@ -1,37 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_3d_controller/flutter_3d_controller.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
-void main() => runApp(const MyApp());
+void main()=>runApp(MaterialApp(home:Toga3D()));
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-  @override Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: const Toga3DViewerScreen(),
-    );
-  }
-}
-
-class Toga3DViewerScreen extends StatelessWidget {
-  const Toga3DViewerScreen({super.key});
-  @override Widget build(BuildContext context) {
-    final controller = Flutter3DController();
-    return Scaffold(
-      appBar: AppBar(title: const Text('Toga DZ - Concepteur 3D'), backgroundColor: Colors.deepPurple, foregroundColor: Colors.white),
-      body: Column(children: [
-        Container(
-          height: MediaQuery.of(context).size.height * 0.5,
-          margin: const EdgeInsets.all(16),
-          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24)),
-          child: Flutter3DViewer(
-            controller: controller,
-            src: 'assets/models/robe.glb',
-          ),
-        ),
-        const Padding(padding: EdgeInsets.all(20), child: Text("Votre nom pour la broderie")),
-        Padding(padding: const EdgeInsets.symmetric(horizontal:20), child: TextField(decoration: InputDecoration(hintText:"Ex: Amina B.", filled:true, fillColor:Colors.white))),
-      ]),
-    );
-  }
+class Toga3D extends StatefulWidget{ @override State<Toga3D> createState()=>_Toga3DState();}
+class _Toga3DState extends State<Toga3D>{
+  late final WebViewController ctrl;
+  @override void initState(){super.initState(); ctrl=WebViewController()..setJavaScriptMode(JavaScriptMode.unrestricted)..loadFlutterAsset('assets/web/index.html');}
+  @override Widget build(BuildContext context)=>Scaffold(
+    appBar:AppBar(title:Text('Toga DZ - 3D'),backgroundColor:Colors.deepPurple,foregroundColor:Colors.white),
+    body:Column(children:[
+      Expanded(child:Container(margin:EdgeInsets.all(16),decoration:BoxDecoration(borderRadius:BorderRadius.circular(24)),clipBehavior:Clip.antiAlias,child:WebViewWidget(controller:ctrl))),
+      Padding(padding:EdgeInsets.all(16),child:TextField(decoration:InputDecoration(labelText:'Votre nom',border:OutlineInputBorder())))
+    ])
+  );
 }
