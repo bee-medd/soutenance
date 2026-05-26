@@ -47,7 +47,6 @@ jobs:
                 brightness: Brightness.light,
                 primarySwatch: Colors.grey,
                 scaffoldBackgroundColor: const Color(0xFFFAFAFA),
-                fontFamily: 'SF Pro Display',
                 useMaterial3: true,
                 cardTheme: CardTheme(
                   elevation: 0,
@@ -80,10 +79,10 @@ jobs:
           late PageController _pageController;
           late AnimationController _fabController;
           
-          final List<Widget> _pages = [
-            const ExplorePage(),
-            const StatsPage(),
-            const ProfilePage(),
+          final List<Widget> _pages = const [
+            ExplorePage(),
+            StatsPage(),
+            ProfilePage(),
           ];
 
           @override
@@ -179,15 +178,6 @@ jobs:
         class ExplorePage extends StatelessWidget {
           const ExplorePage({super.key});
 
-          final List<Map<String, dynamic>> _categories = const [
-            {'icon': Icons.self_improvement, 'name': 'Méditation', 'color': 0xFFE8F0FE, 'iconColor': 0xFF4A90E2},
-            {'icon': Icons.fitness_center, 'name': 'Sport', 'color': 0xFFE6F7F0, 'iconColor': 0xFF27AE60},
-            {'icon': Icons.menu_book, 'name': 'Lecture', 'color': 0xFFFEF3E8, 'iconColor': 0xFFE67E22},
-            {'icon': Icons.spa, 'name': 'Bien-être', 'color': 0xFFEDE7F6, 'iconColor': 0xFF9B59B6},
-            {'icon': Icons.kitchen, 'name': 'Cuisine', 'color': 0xFFFFF5E0, 'iconColor': 0xFFE67E22},
-            {'icon': Icons.bedtime, 'name': 'Sommeil', 'color': 0xFFE3F2FD, 'iconColor': 0xFF2980B9},
-          ];
-
           @override
           Widget build(BuildContext context) {
             return CustomScrollView(
@@ -247,10 +237,10 @@ jobs:
           }
 
           Widget _buildRecommendations() {
-            final items = [
-              {'title': 'Méditation guidée', 'duration': '10 min', 'image': '🧘', 'color': 0xFFE8F0FE},
-              {'title': 'Défi 7 jours', 'duration': 'Démarrage', 'image': '🏆', 'color': 0xFFFFF0F0},
-              {'title': 'Respiration', 'duration': '5 min', 'image': '🌬️', 'color': 0xFFE6F7F0},
+            final List<Map<String, dynamic>> items = [
+              {'title': 'Méditation guidée', 'duration': '10 min', 'emoji': '🧘', 'color': 0xFFE8F0FE},
+              {'title': 'Défi 7 jours', 'duration': 'Démarrage', 'emoji': '🏆', 'color': 0xFFFFF0F0},
+              {'title': 'Respiration', 'duration': '5 min', 'emoji': '🌬️', 'color': 0xFFE6F7F0},
             ];
             return SizedBox(
               height: 180,
@@ -259,11 +249,15 @@ jobs:
                 itemCount: items.length,
                 itemBuilder: (context, index) {
                   final item = items[index];
+                  final colorValue = item['color'] as int;
+                  final titleValue = item['title'] as String;
+                  final durationValue = item['duration'] as String;
+                  final emojiValue = item['emoji'] as String;
                   return Container(
                     width: 160,
                     margin: const EdgeInsets.only(right: 16),
                     decoration: BoxDecoration(
-                      color: Color(item['color']),
+                      color: Color(colorValue),
                       borderRadius: BorderRadius.circular(24),
                     ),
                     child: Padding(
@@ -272,10 +266,10 @@ jobs:
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          Text(item['image'], style: const TextStyle(fontSize: 40)),
+                          Text(emojiValue, style: const TextStyle(fontSize: 40)),
                           const SizedBox(height: 12),
-                          Text(item['title'], style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                          Text(item['duration'], style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+                          Text(titleValue, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                          Text(durationValue, style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
                         ],
                       ),
                     ),
@@ -286,6 +280,14 @@ jobs:
           }
 
           Widget _buildCategories() {
+            final List<Map<String, dynamic>> categories = [
+              {'icon': Icons.self_improvement, 'name': 'Méditation', 'color': 0xFFE8F0FE, 'iconColor': 0xFF4A90E2},
+              {'icon': Icons.fitness_center, 'name': 'Sport', 'color': 0xFFE6F7F0, 'iconColor': 0xFF27AE60},
+              {'icon': Icons.menu_book, 'name': 'Lecture', 'color': 0xFFFEF3E8, 'iconColor': 0xFFE67E22},
+              {'icon': Icons.spa, 'name': 'Bien-être', 'color': 0xFFEDE7F6, 'iconColor': 0xFF9B59B6},
+              {'icon': Icons.kitchen, 'name': 'Cuisine', 'color': 0xFFFFF5E0, 'iconColor': 0xFFE67E22},
+              {'icon': Icons.bedtime, 'name': 'Sommeil', 'color': 0xFFE3F2FD, 'iconColor': 0xFF2980B9},
+            ];
             return GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -295,12 +297,16 @@ jobs:
                 mainAxisSpacing: 16,
                 childAspectRatio: 1.2,
               ),
-              itemCount: _categories.length,
+              itemCount: categories.length,
               itemBuilder: (context, index) {
-                final cat = _categories[index];
+                final cat = categories[index];
+                final iconValue = cat['icon'] as IconData;
+                final nameValue = cat['name'] as String;
+                final colorValue = cat['color'] as int;
+                final iconColorValue = cat['iconColor'] as int;
                 return Container(
                   decoration: BoxDecoration(
-                    color: Color(cat['color']),
+                    color: Color(colorValue),
                     borderRadius: BorderRadius.circular(24),
                   ),
                   child: Material(
@@ -311,9 +317,9 @@ jobs:
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(cat['icon'], size: 40, color: Color(cat['iconColor'])),
+                          Icon(iconValue, size: 40, color: Color(iconColorValue)),
                           const SizedBox(height: 12),
-                          Text(cat['name'], style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                          Text(nameValue, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                         ],
                       ),
                     ),
@@ -329,6 +335,12 @@ jobs:
 
           @override
           Widget build(BuildContext context) {
+            final List<Map<String, dynamic>> statsList = [
+              {'value': '4h 32m', 'label': 'Aujourd\'hui', 'icon': Icons.timer, 'color': 0xFFFF6B6B},
+              {'value': '32h', 'label': 'Cette semaine', 'icon': Icons.calendar_today, 'color': 0xFF4ECDC4},
+              {'value': '-23%', 'label': 'vs semaine dernière', 'icon': Icons.trending_down, 'color': 0xFF45B7D1},
+              {'value': '8/10', 'label': 'Score bien-être', 'icon': Icons.emoji_events, 'color': 0xFFF7B731},
+            ];
             return Container(
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
@@ -340,8 +352,8 @@ jobs:
               child: SafeArea(
                 child: CustomScrollView(
                   slivers: [
-                    SliverAppBar(
-                      title: const Text('Statistiques', style: TextStyle(color: Colors.white)),
+                    const SliverAppBar(
+                      title: Text('Statistiques', style: TextStyle(color: Colors.white)),
                       backgroundColor: Colors.transparent,
                       elevation: 0,
                     ),
@@ -356,31 +368,29 @@ jobs:
                         ),
                         delegate: SliverChildBuilderDelegate(
                           (context, index) {
-                            final stats = [
-                              {'value': '4h 32m', 'label': 'Aujourd\'hui', 'icon': Icons.timer, 'color': 0xFFFF6B6B},
-                              {'value': '32h', 'label': 'Cette semaine', 'icon': Icons.calendar_today, 'color': 0xFF4ECDC4},
-                              {'value': '-23%', 'label': 'vs semaine dernière', 'icon': Icons.trending_down, 'color': 0xFF45B7D1},
-                              {'value': '8/10', 'label': 'Score bien-être', 'icon': Icons.emoji_events, 'color': 0xFFF7B731},
-                            ];
-                            final stat = stats[index];
+                            final stat = statsList[index];
+                            final iconValue = stat['icon'] as IconData;
+                            final valueValue = stat['value'] as String;
+                            final labelValue = stat['label'] as String;
+                            final colorValue = stat['color'] as int;
                             return Container(
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.15),
+                                color: Color(colorValue).withOpacity(0.2),
                                 borderRadius: BorderRadius.circular(28),
                                 border: Border.all(color: Colors.white.withOpacity(0.2)),
                               ),
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Icon(stat['icon'], size: 32, color: Colors.white),
+                                  Icon(iconValue, size: 32, color: Colors.white),
                                   const SizedBox(height: 12),
-                                  Text(stat['value'], style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
-                                  Text(stat['label'], style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.7))),
+                                  Text(valueValue, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
+                                  Text(labelValue, style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.7))),
                                 ],
                               ),
                             );
                           },
-                          childCount: 4,
+                          childCount: statsList.length,
                         ),
                       ),
                     ),
@@ -483,8 +493,6 @@ jobs:
 
         dependencies:
           flutter:
-            sdk: flutter
-          flutter_localizations:
             sdk: flutter
 
         flutter:
