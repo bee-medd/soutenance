@@ -1,17 +1,18 @@
 name: toga_dz
-description: منصة تصميم لباس التخرج 3D
+description: Toga DZ - Concepteur 3D
 publish_to: 'none'
 version: 1.0.0+1
+
 environment:
   sdk: '>=3.0.0 <4.0.0'
+
 dependencies:
   flutter:
     sdk: flutter
-  model_viewer_plus: ^1.4.0
-  http: ^1.1.0
-  shared_preferences: ^2.2.0
+  cupertino_icons: ^1.0.6
+  flutter_cube: ^0.1.1
+
 flutter:
   uses-material-design: true
   assets:
-    - assets/models/
-    - assets/textures/
+    - assets/models/robe.glb
