@@ -10,7 +10,7 @@ dependencies:
   shared_preferences: ^2.2.2
   fl_chart: ^0.68.0
   workmanager: ^0.5.1
-  app_usage: ^3.1.0
+  app_usage: ^4.0.1
   flutter_local_notifications: ^16.3.0
   purchases_flutter: ^6.20.0
 
