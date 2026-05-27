@@ -1,11 +1,151 @@
-          // ويدجت معدلة لبناء كومة الكتب بطبقات ظلال صحيحة (تكدس حقيقي من الأسفل للأعلى)
+name: Build Art Space Premium App
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    # إعداد جافا 17 الضرورية لبناء تطبيقات أندرويد الحديثة بفلاتر 3.22
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'zulu'
+        java-version: '17'
+
+    # تفعيل الكاش لتسريع البناء في المرات القادمة
+    - name: Cache Flutter & Gradle
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.pub-cache
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-artspace-final-build-${{ hashFiles('**/pubspec.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-artspace-final-build-
+
+    - uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.22.0'
+        channel: 'stable'
+
+    - name: Create Art Space App
+      run: |
+        flutter create art_space_app
+        cd art_space_app
+
+        # كتابة كود التطبيق الكامل والمعدل بهندسة الـ Stack والظلال الصحيحة
+        cat > lib/main.dart << 'DARTEOF'
+        import 'package:flutter/material.dart';
+        import 'package:flutter/services.dart';
+
+        void main() {
+          WidgetsFlutterBinding.ensureInitialized();
+          SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+          SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+            statusBarColor: Colors.transparent,
+            statusBarIconBrightness: Brightness.dark,
+          ));
+          runApp(const ArtSpaceApp());
+        }
+
+        class ArtSpaceApp extends StatelessWidget {
+          const ArtSpaceApp({super.key});
+
+          @override
+          Widget build(BuildContext context) {
+            return MaterialApp(
+              title: 'Art Space',
+              theme: ThemeData(
+                brightness: Brightness.light,
+                scaffoldBackgroundColor: const Color(0xFFF6F5F2), // لون خلفية الصورة بدقة
+                useMaterial3: true,
+              ),
+              debugShowCheckedModeBanner: false,
+              home: const ArtSpaceHome(),
+            );
+          }
+        }
+
+        class ArtSpaceHome extends StatelessWidget {
+          const ArtSpaceHome({super.key});
+
+          @override
+          Widget build(BuildContext context) {
+            return Scaffold(
+              body: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const SizedBox(height: 40),
+                      // عنوان التطبيق الفني المماثل للصورة
+                      const Text(
+                        'ART\nSPACE',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 48,
+                          fontWeight: FontWeight.w300,
+                          letterSpacing: 4,
+                          height: 1.1,
+                          color: Color(0xFF8E8E93),
+                          fontFamily: 'serif',
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      // النص الفرعي الصغير
+                      const Text(
+                        'CHAPTER 4',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                          letterSpacing: 2,
+                          color: Colors.black54,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      // نص العنوان المثير
+                      const Text(
+                        'UPCOMING\nRELEASES',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 26,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 1,
+                          height: 1.1,
+                          color: Colors.black87,
+                          fontFamily: 'serif',
+                        ),
+                      ),
+                      const Spacer(),
+                      
+                      // استدعاء كومة الكتب المعدلة بطبقات صحيحة
+                      _buildBooksStack(),
+                      
+                      const SizedBox(height: 20),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }
+
+          // بناء كومة الكتب باستخدام الـ Stack لتراكم الطبقات والظلال من الأسفل للأعلى بشكل واقعي
           Widget _buildBooksStack() {
             return SizedBox(
-              height: 250, // ارتفاع مناسب يحتوي على كل الطبقات المتداخلة
+              height: 250, // ارتفاع المربع المحتوي على مجموعة الكتب بالكامل
               child: Stack(
                 alignment: Alignment.bottomCenter,
                 children: [
-                  // 5. الكتاب الأكبر في الأسفل (يُبنى أولاً ليكون في الخلفية)
+                  // 5. الكتاب الأكبر في الأسفل (يُبنى أولاً ليكون تحت بقية الكتب)
                   Positioned(
                     bottom: 0,
                     child: _buildSingleBook(
@@ -15,7 +155,7 @@
                       shadowColor: Colors.black.withOpacity(0.3),
                       borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
                       child: const Padding(
-                        padding: EdgeInsets.only(top: 25.0), // إزاحة النص للأسفل لأن الكتاب الذي فوقه سيغطيه جزئياً
+                        padding: EdgeInsets.only(top: 25.0), // إزاحة النص لعدم تغطيته بالكتاب العلوي
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -44,7 +184,7 @@
                     ),
                   ),
 
-                  // 4. الكتاب الرابع (الوردي) - يرتفع قليلاً فوق الأزرق
+                  // 4. الكتاب الرابع (الوردي المتميز) - يركب فوق الأزرق
                   Positioned(
                     bottom: 75,
                     child: _buildSingleBook(
@@ -67,7 +207,7 @@
                     ),
                   ),
 
-                  // 3. الكتاب الثالث (الأزرق الداكن)
+                  // 3. الكتاب الثالث (الأزرق الداكن) - يركب فوق الوردي
                   Positioned(
                     bottom: 125,
                     child: _buildSingleBook(
@@ -84,13 +224,13 @@
                             fontSize: 10,
                             fontWeight: FontWeight.w500,
                             letterSpacing: 1.5,
-                          ),
-                        ),
                       ),
                     ),
                   ),
+                ),
+              ),
 
-                  // 2. الكتاب الثاني (الرمادي)
+                  // 2. الكتاب الثاني (الرمادي الفاتح مع كلمة CRITIC)
                   Positioned(
                     bottom: 153,
                     child: _buildSingleBook(
@@ -113,7 +253,7 @@
                     ),
                   ),
 
-                  // 1. الكتاب الأول والأصغر في الأعلى (يركب فوق الجميع ويلقي ظله عليهم)
+                  // 1. الكتاب الأول والأصغر في القمة (الأحمر) - يقع فوق كل الكتب ويلقي ظلاله عليها
                   Positioned(
                     bottom: 177,
                     child: _buildSingleBook(
@@ -128,3 +268,76 @@
               ),
             );
           }
+
+          // دالة تشكيل كل كتاب بشكل مستقل مع إضافة تأثيرات الإضاءة والعمق ثلاثي الأبعاد المسطح
+          Widget _buildSingleBook({
+            required double width,
+            required double height,
+            required List<Color> gradientColors,
+            required Color shadowColor,
+            BorderRadiusGeometry? borderRadius,
+            Widget? child,
+          }) {
+            return Container(
+              width: width,
+              height: height,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: gradientColors,
+                ),
+                borderRadius: borderRadius ?? BorderRadius.circular(4),
+                boxShadow: [
+                  BoxShadow(
+                    color: shadowColor,
+                    blurRadius: 6,
+                    offset: const Offset(0, 3),
+                  ),
+                  // خط إضاءة علوي داخلي ناعم لمحاكاة حافة الكتاب الورقية الحقيقية
+                  BoxShadow(
+                    color: Colors.white.withOpacity(0.15),
+                    blurRadius: 0,
+                    offset: const Offset(0, -1),
+                  ),
+                ],
+              ),
+              child: child,
+            );
+          }
+        }
+        DARTEOF
+
+        # كتابة ملف إعدادات المشروع (pubspec.yaml)
+        cat > pubspec.yaml << 'PUBEOF'
+        name: art_space_app
+        description: Art Space Premium Elegant App
+        version: 1.0.0+1
+        publish_to: none
+
+        environment:
+          sdk: '>=3.3.0 <4.0.0'
+
+        dependencies:
+          flutter:
+            sdk: flutter
+
+        flutter:
+          uses-material-design: true
+        PUBEOF
+
+        # معالجة ملفات الأندرويد لترقية إصدار Kotlin متوافق مع سيرفرات أوبونتو
+        sed -i 's/ext.kotlin_version = .*/ext.kotlin_version = "1.9.22"/' android/build.gradle || true
+
+        flutter clean
+        flutter pub get
+        flutter build apk --release
+        
+        # البحث عن ملف الـ APK النهائي المترجم ونسخه للمجلد العام
+        find build/ -name "app-release.apk" -exec cp {} ../art-space-premium.apk \;
+
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: art-space-release
+        path: art-space-premium.apk
