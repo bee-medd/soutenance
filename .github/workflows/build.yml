@@ -25,9 +25,9 @@ jobs:
           ~/.pub-cache
           ~/.gradle/caches
           ~/.gradle/wrapper
-        key: ${{ runner.os }}-ecommerce-final-v2-${{ hashFiles('**/pubspec.yaml') }}
+        key: ${{ runner.os }}-ecommerce-final-v3-${{ hashFiles('**/pubspec.yaml') }}
         restore-keys: |
-          ${{ runner.os }}-ecommerce-final-v2-
+          ${{ runner.os }}-ecommerce-final-v3-
 
     - uses: subosito/flutter-action@v2
       with:
@@ -477,7 +477,6 @@ jobs:
             );
           }
 
-          // تم إصلاح الخطأ المتكرر والقوس المفقود هنا تماماً
           Widget _buildCategories() {
             return SizedBox(
               height: 40,
@@ -521,7 +520,7 @@ jobs:
             return Padding(
               padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.between,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Color(0xFF1A1A2E))),
                   if (action.isNotEmpty)
@@ -564,7 +563,7 @@ jobs:
                               const SizedBox(height: 4),
                               Text(product.name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1A1A2E))),
                               const SizedBox(height: 8),
-                              Text('\$${product.price}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.black, color: Color(0xFF1A1A2E))),
+                              Text('\$${product.price}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Color(0xFF1A1A2E))),
                               const SizedBox(height: 10),
                               ElevatedButton(
                                 style: ElevatedButton.styleFrom(
@@ -658,9 +657,9 @@ jobs:
                           Padding(
                             padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
                             child: Row(
-                              mainAxisAlignment: MainAxisAlignment.between,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text('\$${product.price}', style: const TextStyle(fontWeight: FontWeight.black, fontSize: 15, color: Color(0xFF6C63FF))),
+                                Text('\$${product.price}', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15, color: Color(0xFF6C63FF))),
                                 GestureDetector(
                                   onTap: widget.onAddToCart,
                                   child: Container(
@@ -787,7 +786,7 @@ jobs:
                                       Text(prod.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                                       Text(prod.category, style: const TextStyle(color: Colors.grey, fontSize: 11)),
                                       const SizedBox(height: 4),
-                                      Text('\$${prod.price}', style: const TextStyle(fontWeight: FontWeight.black, color: Color(0xFF6C63FF))),
+                                      Text('\$${prod.price}', style: const TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF6C63FF))),
                                     ],
                                   ),
                                 ),
@@ -801,13 +800,16 @@ jobs:
                           decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
                           child: Column(
                             children: [
-                              Row(mainAxisAlignment: MainAxisAlignment.between, children: [const Text('Total Items'), Text('$cartCount')]),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween, 
+                                children: [const Text('Total Items'), Text('$cartCount')],
+                              ),
                               const Divider(height: 24),
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.between,
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   const Text('Total Price', style: TextStyle(fontWeight: FontWeight.bold)),
-                                  Text('\$${(cartCount * 129.99).toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.black, fontSize: 16, color: Color(0xFF6C63FF))),
+                                  Text('\$${(cartCount * 129.99).toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Color(0xFF6C63FF))),
                                 ],
                               ),
                             ],
